@@ -20,9 +20,6 @@
     <name>Stockholm University</name>
     <url>www.su.se</url>
   </organization>
-  <properties>
-    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-  </properties>
   <build>
     <resources>
       <resource>
@@ -121,6 +118,7 @@
     <derby.version>10.4.2.0</derby.version>
     <maven.build.timestamp.format>yyyy-MM-dd HH:mm:ss</maven.build.timestamp.format>
     <buildNumber>${maven.build.timestamp}</buildNumber>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
   </properties>
 
   <scm>
