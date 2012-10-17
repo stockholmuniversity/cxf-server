@@ -1,0 +1,150 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>se.su.it.svc</groupId>
+  <artifactId>sukat-cxf-server</artifactId>
+  <version>0.4-SNAPSHOT</version>
+  <packaging>jar</packaging>
+  <name>sukat-cxf-server</name>
+
+  <developers>
+    <developer>
+      <name>Jan Qvarnström</name>
+      <email>jan.qvarnstrom@su.se</email>
+    </developer>
+    <developer>
+      <name>Joakim Lundin</name>
+      <email>joakim.lundin@su.se</email>
+    </developer>
+  </developers>
+  <organization>
+    <name>Stockholm University</name>
+    <url>www.su.se</url>
+  </organization>
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+  </properties>
+  <build>
+    <resources>
+      <resource>
+        <filtering>true</filtering>
+        <directory>src/main/resources</directory>
+      </resource>
+    </resources>
+    <pluginManagement>
+      <plugins>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-compiler-plugin</artifactId>
+          <configuration>
+            <source>1.5</source>
+            <target>1.5</target>
+          </configuration>
+        </plugin>
+      </plugins>
+    </pluginManagement>
+  </build>
+  <dependencies>
+    <dependency>
+      <groupId>org.spocp.jspocp</groupId>
+      <artifactId>jspocp</artifactId>
+      <version>1.1</version>
+      <exclusions>
+        <exclusion>  <!-- declare the exclusion here -->
+          <groupId>commons-logging</groupId>
+          <artifactId>commons-logging</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+
+    <!-- No reason not to do add! -->
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>4.5</version>
+      <scope>test</scope>
+    </dependency>
+
+    <!-- Embedded Database Dependency -->
+    <dependency>
+      <groupId>org.apache.derby</groupId>
+      <artifactId>derby</artifactId>
+      <version>${derby.version}</version>
+      <type>jar</type>
+    </dependency>
+
+
+    <dependency>
+      <groupId>javax.servlet</groupId>
+      <artifactId>javax.servlet-api</artifactId>
+      <version>3.0.1</version>
+    </dependency>
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-simple</artifactId>
+      <version>1.5.8</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.cxf</groupId>
+      <artifactId>cxf-rt-frontend-jaxws</artifactId>
+      <version>2.6.1</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.cxf</groupId>
+      <artifactId>cxf-rt-transports-http</artifactId>
+      <version>2.6.1</version>
+    </dependency>
+    <!-- Jetty is needed if you're using the CXFServlet -->
+    <dependency>
+      <groupId>org.apache.cxf</groupId>
+      <artifactId>cxf-rt-transports-http-jetty</artifactId>
+      <version>2.6.1</version>
+    </dependency>
+    <dependency>
+      <groupId>org.codehaus.groovy</groupId>
+      <artifactId>groovy</artifactId>
+      <version>1.7.5</version>
+    </dependency>
+    <dependency>
+      <groupId>antlr</groupId>
+      <artifactId>antlr</artifactId>
+      <version>2.7.6</version>
+    </dependency>
+    <dependency>
+      <groupId>org.eclipse.jetty</groupId>
+      <artifactId>jetty-webapp</artifactId>
+      <version>7.5.4.v20111024</version>
+    </dependency>
+  </dependencies>
+  
+  <properties>
+    <jetty.version>6.1.14</jetty.version>
+    <derby.version>10.4.2.0</derby.version>
+    <maven.build.timestamp.format>yyyy-MM-dd HH:mm:ss</maven.build.timestamp.format>
+    <buildNumber>${maven.build.timestamp}</buildNumber>
+  </properties>
+
+  <scm>
+    <connection>scm:git:ssh://git.it.su.se/git/sukat-cxf-server</connection>
+    <developerConnection>scm:git:ssh://git.it.su.se/git/sukat-cxf-server</developerConnection>
+  </scm>
+  <repositories>
+    <repository>
+      <id>su-mvn</id>
+      <name>SU Maven2</name>
+      <url>http://maven.it.su.se/it.su.se/maven2</url>
+    </repository>
+    <repository>
+      <id>su-maven</id>
+      <name>SU Maven</name>
+      <url>http://maven.it.su.se/it.su.se/maven</url>
+      <layout>legacy</layout>
+    </repository>
+  </repositories>
+  
+  <distributionManagement>
+    <repository>
+      <id>ssh-repository</id>
+      <url>scpexe://svn.it.su.se/afs/su.se/services/maven/it.su.se/maven2</url>
+    </repository>
+  </distributionManagement>
+</project>
