@@ -24,19 +24,27 @@ public class Start {
 
     // Read properties file.
     Properties properties = new Properties();
+    // Begin Default properties
+    //Ssl
+    properties.put("ssl.port", 443);
+    properties.put("ssl.keystore", "cxf-svc-server.keystore");
+    properties.put("ssl.password", "changeit");
+    //Spnego
+    properties.put("spnego.properties", "spnego.properties");
+    properties.put("spnego.realm", "SU.SE");
+    // End Default properties
     FileInputStream is = null;
     try {
       is = new FileInputStream("/local/cxf-server/conf/config.properties");
       properties.load(is);
     } catch (IOException e) {
-      e.printStackTrace();
-      System.exit(1);
+      System.out.println("Exception when trying to read configuration file /local/cxf-server/conf/config.properties, exception message was: " + e.getMessage() + ".");
+      System.out.println("Using default properties for application!");
     }  finally {
       if( null != is ){
         try {
           is.close();
         } catch( IOException e ) {
-          e.printStackTrace();
         }
       }
 
