@@ -1,6 +1,7 @@
 import org.eclipse.jetty.security.SpnegoLoginService;
 import org.eclipse.jetty.server.Connector;
 import org.eclipse.jetty.server.Handler;
+import org.eclipse.jetty.server.bio.SocketConnector;
 import org.eclipse.jetty.server.handler.DefaultHandler;
 import org.eclipse.jetty.server.handler.HandlerCollection;
 import org.eclipse.jetty.server.handler.HandlerList;
@@ -25,8 +26,9 @@ public class Start {
     // Read properties file.
     Properties properties = new Properties();
     // Begin Default properties
+    properties.put("http.port", 443);
     //Ssl
-    properties.put("ssl.port", 443);
+    properties.put("ssl.enabled", true);
     properties.put("ssl.keystore", "cxf-svc-server.keystore");
     properties.put("ssl.password", "changeit");
     //Spnego
@@ -50,8 +52,9 @@ public class Start {
 
     }
 
+    int httpPort        = Integer.parseInt(properties.getProperty("http.port").trim());
     // extracting the config properties for ssl setup
-    int sslPort         = Integer.parseInt(properties.getProperty("ssl.port"));
+    boolean sslEnabled  = Boolean.parseBoolean(properties.getProperty("ssl.enabled"));
     String sslKeystore  = properties.getProperty("ssl.keystore");
     String sslPassword  = properties.getProperty("ssl.password");
 
@@ -63,14 +66,20 @@ public class Start {
 
       org.eclipse.jetty.server.Server server = new org.eclipse.jetty.server.Server();
 
-      SslSocketConnector connector = new SslSocketConnector();
+      if(sslEnabled) {
+        SslSocketConnector connector = new SslSocketConnector();
 
-      connector.setPort(sslPort);
-      connector.setKeystore(sslKeystore);
-      connector.setPassword(sslPassword);
+        connector.setPort(httpPort);
+        connector.setKeystore(sslKeystore);
+        connector.setPassword(sslPassword);
 
-      server.setConnectors(new Connector[]{connector});
+        server.setConnectors(new Connector[]{connector});
+      } else {
+        SocketConnector connector = new SocketConnector();
+        connector.setPort(httpPort);
 
+        server.setConnectors(new Connector[]{connector});
+      }
 
       URL url = Start.class.getClassLoader().getResource("Start.class");
       File warFile = new File(((JarURLConnection) url.openConnection()).getJarFile().getName());
@@ -87,10 +96,12 @@ public class Start {
       handlers.setHandlers(new Handler[] {fh, context, new DefaultHandler() });
 
       server.setHandler(handlers);
+
       SpnegoLoginService sLoginService = new SpnegoLoginService(spnegoRealm);
       sLoginService.setConfig(spnegoProperties);
       context.getSecurityHandler().setLoginService(sLoginService);
       context.getSecurityHandler().setAuthenticator(new SuCxfAuthenticator(context));
+
 
       server.start();
       System.out.println("Server ready...");
