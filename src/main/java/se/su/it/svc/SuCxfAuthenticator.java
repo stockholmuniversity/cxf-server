@@ -100,6 +100,7 @@ public class SuCxfAuthenticator extends SpnegoAuthenticator {
 
     String theClass = "se.su.it.svc." + rURI.replaceAll("/", "");
     String role = "";
+    if(theClass.equals("se.su.it.svc.")) {return false;}//No service, wsdl or status.html on url
     try {
       Class annoClass = this.myContext.getClassLoader().loadClass(theClass);
       Annotation[] annotations = annoClass.getAnnotations();
