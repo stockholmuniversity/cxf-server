@@ -77,16 +77,6 @@ public class SuCxfAuthenticator extends SpnegoAuthenticator {
           Log.info(user.getUserPrincipal().getName() + " Authenticated!");
           return new UserAuthentication(getAuthMethod(), user);
         }
-        else {
-          try{
-            ((HttpServletResponse) response).setHeader(HttpHeaders.WWW_AUTHENTICATE, "realm=\"" + _loginService.getName() + '"');
-            ((HttpServletResponse) response).sendError(HttpServletResponse.SC_UNAUTHORIZED);
-            return Authentication.SEND_CONTINUE;
-          } catch (Exception e) {
-            e.printStackTrace();
-            return Authentication.SEND_CONTINUE;
-          }
-        }
       }
     }
 
