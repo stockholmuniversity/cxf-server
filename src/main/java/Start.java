@@ -60,6 +60,7 @@ public class Start {
       System.out.println("ssl.keystore=cxf-svc-server.keystore");
       System.out.println("ssl.password=changeit");
       //Spnego
+      System.out.println("spnego.conf=/etc/spnego.conf");
       System.out.println("spnego.properties=spnego.properties");
       System.out.println("spnego.realm=SU.SE");
       //Ehcache
@@ -85,6 +86,7 @@ public class Start {
       properties.put("ssl.keystore", "cxf-svc-server.keystore");
       properties.put("ssl.password", "changeit");
       //Spnego
+      properties.put("spnego.conf","/etc/spnego.conf");
       properties.put("spnego.properties", "spnego.properties");
       properties.put("spnego.realm", "SU.SE");
       //Ehcache
@@ -107,8 +109,9 @@ public class Start {
     String sslPassword  = properties.getProperty("ssl.password");
 
     //extracting the config for the spnegp setup
-    String spnegoRealm      = properties.getProperty("spnego.realm");
-    String spnegoProperties = properties.getProperty("spnego.properties");
+    String spnegoConfigFileName     = properties.getProperty("spnego.conf");
+    String spnegoRealm              = properties.getProperty("spnego.realm");
+    String spnegoPropertiesFileName = properties.getProperty("spnego.properties");
 
     try {
 
@@ -145,8 +148,9 @@ public class Start {
 
       server.setHandler(handlers);
 
+      System.setProperty("java.security.auth.login.config", "=file:" + spnegoConfigFileName);
       SpnegoLoginService sLoginService = new SpnegoLoginService(spnegoRealm);
-      sLoginService.setConfig(spnegoProperties);
+      sLoginService.setConfig(spnegoPropertiesFileName);
       context.getSecurityHandler().setLoginService(sLoginService);
       context.getSecurityHandler().setAuthenticator(new SuCxfAuthenticator(context));
 
@@ -171,6 +175,7 @@ public class Start {
       if(properties.get("ssl.keystore") == null) {notFoundList.add("ssl.keystore");}
       if(properties.get("ssl.password") == null) {notFoundList.add("ssl.password");}
     }
+    if(properties.get("spnego.conf") == null) {notFoundList.add("spnego.conf");}
     if(properties.get("spnego.properties") == null) {notFoundList.add("spnego.properties");}
     if(properties.get("spnego.realm") == null) {notFoundList.add("spnego.realm");}
     if(properties.get("ehcache.maxElementsInMemory") == null) {notFoundList.add("ehcache.maxElementsInMemory");}
