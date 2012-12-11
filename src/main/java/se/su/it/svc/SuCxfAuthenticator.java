@@ -28,6 +28,7 @@ import java.util.Enumeration;
 
 
 public class SuCxfAuthenticator extends SpnegoAuthenticator {
+  private static final org.apache.log4j.Logger logger = org.apache.log4j.Logger.getLogger(SuCxfAuthenticator.class);
   private WebAppContext myContext = null;
 
   public SuCxfAuthenticator(WebAppContext context) {
@@ -58,12 +59,13 @@ public class SuCxfAuthenticator extends SpnegoAuthenticator {
           return Authentication.UNAUTHENTICATED;
         }
 
-        Log.debug("SpengoAuthenticator: sending challenge");
+        logger.debug("SpengoAuthenticator: sending challenge");
         res.setHeader(HttpHeaders.WWW_AUTHENTICATE, HttpHeaders.NEGOTIATE);
         res.sendError(HttpServletResponse.SC_UNAUTHORIZED);
         return Authentication.SEND_CONTINUE;
       } catch (IOException ioe) {
-        throw new ServerAuthException(ioe);
+        logger.debug("SpengoAuthenticator: Exception when sending challenge, exception was: " + ioe.getMessage());
+        return Authentication.SEND_CONTINUE;
       }
     } else if (header != null && header.startsWith(HttpHeaders.NEGOTIATE)) {
       String spnegoToken = header.substring(10);
@@ -74,18 +76,22 @@ public class SuCxfAuthenticator extends SpnegoAuthenticator {
 
         if(checkRole(user.getUserPrincipal().getName(), ((HttpServletRequest) request).getRequestURI()))
         {
-          Log.info(user.getUserPrincipal().getName() + " Authenticated!");
+          logger.debug("SpengoAuthenticator:" + user.getUserPrincipal().getName() + " authenticated!");
           return new UserAuthentication(getAuthMethod(), user);
         }
+        logger.debug("SpengoAuthenticator: User <" + user.getUserPrincipal().getName() + "> Did not pass spocp rule check!");
+      } else {
+        logger.debug("SpengoAuthenticator: Authorization failed, no principal!");
       }
     }
 
     try{
+      logger.debug("SpengoAuthenticator: Authorization failed!");
       ((HttpServletResponse) response).setHeader(HttpHeaders.WWW_AUTHENTICATE, "realm=\"" + _loginService.getName() + '"');
       ((HttpServletResponse) response).sendError(HttpServletResponse.SC_UNAUTHORIZED);
       return Authentication.SEND_CONTINUE;
     } catch (Exception e) {
-      e.printStackTrace();
+      logger.debug("SpengoAuthenticator: Exception when sending SC_UNAUTHORIZED), exception was: " + e.getMessage());
       return Authentication.SEND_CONTINUE;
     }
   }

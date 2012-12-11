@@ -27,11 +27,11 @@ public class Start {
     // Begin Check if properties file is defined as define argument
     String definedConfigFileName = System.getProperty("config.properties");
     if(definedConfigFileName != null) {
-      System.out.println("The configuration variable config.properties was set to <" + definedConfigFileName.trim() + ">.\r\n Checking properties in file...");
+      logger.info("The configuration variable config.properties was set to <" + definedConfigFileName.trim() + ">.\r\n Checking properties in file...");
       try {
         File file=new File(definedConfigFileName.trim());
         if(!file.exists()) {
-          System.out.println("<" + definedConfigFileName.trim() + "> the file was not found. Quitting....");
+          logger.error("<" + definedConfigFileName.trim() + "> the file was not found. Quitting....");
           System.exit(10);
         }
         FileInputStream is = new FileInputStream(definedConfigFileName.trim());
@@ -41,38 +41,38 @@ public class Start {
           System.exit(10);
         }
       } catch (Exception e) {
-        System.out.println("<" + definedConfigFileName.trim() + ">, got an exception <" + e.getMessage() + "> trying to access file. Quitting....");
+        logger.error("<" + definedConfigFileName.trim() + ">, got an exception <" + e.getMessage() + "> trying to access file. Quitting....");
         System.exit(10);
       }
     } else {
       // Begin Default properties
-      System.out.println("No config.properties file set in system environment, using defaults.");
+      logger.warn("No config.properties file set in system environment, using defaults.");
 
-      System.out.println("database.url=jdbc:mysql://localhost/gormtest");
-      System.out.println("database.driver=com.mysql.jdbc.Driver");
-      System.out.println("database.user=gormtest");
-      System.out.println("database.password=gormtest");
+      logger.warn("database.url=jdbc:mysql://localhost/gormtest");
+      logger.warn("database.driver=com.mysql.jdbc.Driver");
+      logger.warn("database.user=gormtest");
+      logger.warn("database.password=gormtest");
       //Ldap
-      System.out.println("ldap.serverro=ldap://ldap-test.su.se");
-      System.out.println("ldap.serverrw=ldap://sukat-test-ldaprw02.it.su.se");
+      logger.warn("ldap.serverro=ldap://ldap-test.su.se");
+      logger.warn("ldap.serverrw=ldap://sukat-test-ldaprw02.it.su.se");
       //Ssl
-      System.out.println("http.port=443");
-      System.out.println("ssl.enabled=true");
-      System.out.println("ssl.keystore=cxf-svc-server.keystore");
-      System.out.println("ssl.password=changeit");
+      logger.warn("http.port=443");
+      logger.warn("ssl.enabled=true");
+      logger.warn("ssl.keystore=cxf-svc-server.keystore");
+      logger.warn("ssl.password=changeit");
       //Spnego
-      System.out.println("spnego.conf=/etc/spnego.conf");
-      System.out.println("spnego.properties=spnego.properties");
-      System.out.println("spnego.realm=SU.SE");
+      logger.warn("spnego.conf=/etc/spnego.conf");
+      logger.warn("spnego.properties=spnego.properties");
+      logger.warn("spnego.realm=SU.SE");
       //Ehcache
-      System.out.println("ehcache.maxElementsInMemory=10000");
-      System.out.println("ehcache.eternal=false");
-      System.out.println("ehcache.timeToIdleSeconds=120");
-      System.out.println("ehcache.timeToLiveSeconds=600");
-      System.out.println("ehcache.overflowToDisk=false");
-      System.out.println("ehcache.diskPersistent=false");
-      System.out.println("ehcache.diskExpiryThreadIntervalSeconds=120");
-      System.out.println("ehcache.memoryStoreEvictionPolicy=LRU");
+      logger.warn("ehcache.maxElementsInMemory=10000");
+      logger.warn("ehcache.eternal=false");
+      logger.warn("ehcache.timeToIdleSeconds=120");
+      logger.warn("ehcache.timeToLiveSeconds=600");
+      logger.warn("ehcache.overflowToDisk=false");
+      logger.warn("ehcache.diskPersistent=false");
+      logger.warn("ehcache.diskExpiryThreadIntervalSeconds=120");
+      logger.warn("ehcache.memoryStoreEvictionPolicy=LRU");
 
       properties.put("database.url", "jdbc:mysql://localhost/gormtest");
       properties.put("database.driver", "com.mysql.jdbc.Driver");
@@ -157,7 +157,7 @@ public class Start {
 
 
       server.start();
-      System.out.println("Server ready...");
+      logger.info("Server ready...");
       server.join();
 
     } catch (Exception ex) {
@@ -193,10 +193,10 @@ public class Start {
     }
 
     for(int i=0;i < notFoundList.size();i++) {
-      System.out.println("Property <" + notFoundList.get(i) + ">   ...not found");
+      logger.error("Property <" + notFoundList.get(i) + ">   ...not found");
     }
     // End check for mandatory properties
-    System.out.println("Quitting because mandatory properties was missing...");
+    logger.error("Quitting because mandatory properties was missing...");
     return false;  //To change body of created methods use File | Settings | File Templates.
   }
 }

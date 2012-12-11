@@ -14,6 +14,7 @@ import java.io.IOException;
 import java.util.Properties;
 
 public class FilterHandler extends AbstractHandler {
+  private static final org.apache.log4j.Logger logger = org.apache.log4j.Logger.getLogger(FilterHandler.class);
   String tmpDir = null;
   public FilterHandler(String tmpDir) {
     this.tmpDir = tmpDir;
@@ -36,7 +37,7 @@ public class FilterHandler extends AbstractHandler {
         response.getWriter().println("Version: " + (version != null && version.length() > 0 ? version : noinfo) + "<br />");
         response.getWriter().println("Build Time: " + (builddate != null && builddate.length() > 0 ? builddate : noinfo) + "<br />");
       } catch (Exception e){
-        System.out.println("Warning: Could not read version.properties file. " + e.getMessage());
+        logger.debug("Warning: Could not read version.properties file. " + e.getMessage());
         response.getWriter().println(noinfo);
       }
       response.getWriter().println("<br /><br />");
@@ -51,7 +52,7 @@ public class FilterHandler extends AbstractHandler {
         response.getWriter().println("Server Version: " + (version != null && version.length() > 0 ? version : noinfo) + "<br />");
         response.getWriter().println("Server Build Time: " + (builddate != null && builddate.length() > 0 ? builddate : noinfo) + "<br />");
       } catch (Exception e){
-        System.out.println("Warning: Could not read server version.properties file. " + e.getMessage());
+        logger.debug("Warning: Could not read server version.properties file. " + e.getMessage());
         response.getWriter().println(noinfo);
       }
       baseRequest.setHandled(true);
