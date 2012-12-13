@@ -8,6 +8,7 @@ import org.eclipse.jetty.server.handler.HandlerList;
 import org.eclipse.jetty.server.nio.SelectChannelConnector;
 import org.eclipse.jetty.server.ssl.SslSocketConnector;
 import org.eclipse.jetty.webapp.WebAppContext;
+import org.eclipse.jetty.util.log.StdErrLog;
 import se.su.it.svc.FilterHandler;
 import se.su.it.svc.SuCxfAuthenticator;
 
@@ -154,7 +155,6 @@ public class Start {
       sLoginService.setConfig(spnegoPropertiesFileName);
       context.getSecurityHandler().setLoginService(sLoginService);
       context.getSecurityHandler().setAuthenticator(new SuCxfAuthenticator(context));
-
 
       server.start();
       logger.info("Server ready...");
