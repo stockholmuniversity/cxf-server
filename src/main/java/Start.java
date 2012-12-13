@@ -1,3 +1,8 @@
+import org.apache.log4j.ConsoleAppender;
+import org.apache.log4j.Level;
+import org.apache.log4j.Logger;
+import org.apache.log4j.LogManager;
+import org.apache.log4j.PatternLayout;
 import org.eclipse.jetty.security.SpnegoLoginService;
 import org.eclipse.jetty.server.Connector;
 import org.eclipse.jetty.server.Handler;
@@ -150,6 +155,7 @@ public class Start {
 
       server.setHandler(handlers);
 
+      System.setProperty("javax.security.auth.useSubjectCredsOnly","false");
       System.setProperty("java.security.auth.login.config", "=file:" + spnegoConfigFileName);
       SpnegoLoginService sLoginService = new SpnegoLoginService(spnegoRealm);
       sLoginService.setConfig(spnegoPropertiesFileName);
@@ -199,4 +205,5 @@ public class Start {
     logger.error("Quitting because mandatory properties was missing...");
     return false;  //To change body of created methods use File | Settings | File Templates.
   }
+
 }

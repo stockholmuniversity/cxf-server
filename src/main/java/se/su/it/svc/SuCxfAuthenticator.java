@@ -1,5 +1,8 @@
 package se.su.it.svc;
 
+import org.apache.log4j.Level;
+import org.apache.log4j.LogManager;
+import org.apache.log4j.Logger;
 import org.eclipse.jetty.http.HttpHeaders;
 import org.eclipse.jetty.security.ServerAuthException;
 import org.eclipse.jetty.security.UserAuthentication;
@@ -115,14 +118,14 @@ public class SuCxfAuthenticator extends SpnegoAuthenticator {
             Method m = methods[i];
             if (m.getName() == "role") {
               role = (String) m.invoke(annotation, null);
-              Log.debug("Using SPOCP Role: " + role);
+              logger.debug("Using SPOCP Role: " + role);
               break;
             }
           }
         }
       }
     } catch (Exception e) {
-      Log.warn("Could not figure out class from request URI:" + rURI + ". Faulty classname:" + theClass + ". Exception: " + e.getMessage());
+      logger.warn("Could not figure out class from request URI:" + rURI + ". Faulty classname:" + theClass + ". Exception: " + e.getMessage());
       e.printStackTrace();
       return ok;
     }
@@ -140,7 +143,7 @@ public class SuCxfAuthenticator extends SpnegoAuthenticator {
           ok = res.getResultCode() == SPOCPResult.SPOCP_SUCCESS;
         }
       } catch (Exception ex) {
-        Log.warn("Could not check SPOCP Role: " + role + ". Error was: " + ex.getMessage());
+        logger.warn("Could not check SPOCP Role: " + role + ". Error was: " + ex.getMessage());
         ex.printStackTrace();
       } finally {
         try {
@@ -153,7 +156,7 @@ public class SuCxfAuthenticator extends SpnegoAuthenticator {
       } catch (Exception ignore) {
       }
     } else {
-      Log.info("No SPOCP Role authentication for: " + theClass + ". Call will be let through.");
+      logger.info("No SPOCP Role authentication for: " + theClass + ". Call will be let through.");
       return true;
     }
     return (ok);
