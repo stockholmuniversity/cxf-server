@@ -31,7 +31,9 @@ import java.util.*;
 public class Start {
   private static final org.apache.log4j.Logger logger = org.apache.log4j.Logger.getLogger(Start.class);
   public static void main(String[] args) {
-
+    if(System.getProperty("DEBUG") != null) {
+      LogManager.getRootLogger().setLevel(Level.DEBUG);
+    }
     Properties properties = new Properties();
     // Begin Check if properties file is defined as define argument
     String definedConfigFileName = System.getProperty("config.properties");
