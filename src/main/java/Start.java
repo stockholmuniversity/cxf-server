@@ -20,8 +20,11 @@ import se.su.it.svc.SuCxfAuthenticator;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.RandomAccessFile;
 import java.net.JarURLConnection;
 import java.net.URL;
+import java.nio.MappedByteBuffer;
+import java.nio.channels.FileChannel;
 import java.util.*;
 
 
@@ -162,6 +165,8 @@ public class Start {
       context.getSecurityHandler().setLoginService(sLoginService);
       context.getSecurityHandler().setAuthenticator(new SuCxfAuthenticator(context));
 
+      Thread monitor = new MonitorThread();
+      monitor.start();
       server.start();
       logger.info("Server ready...");
       server.join();
@@ -205,5 +210,127 @@ public class Start {
     logger.error("Quitting because mandatory properties was missing...");
     return false;  //To change body of created methods use File | Settings | File Templates.
   }
+
+  private static class MonitorThread extends Thread {
+    private static final String APP="se.su.it.svc";
+    private static final String JETTY="org.eclipse.jetty";
+    private static final String CXF="org.apache.cxf";
+    private static final String SPRING="org.springframework";
+
+    private FileChannel fc;
+    private MappedByteBuffer mem;
+
+    public MonitorThread() {
+      setDaemon(true);
+      setName("StopMonitor");
+      try {
+        fc = new RandomAccessFile("/tmp/cxf-server-tmp.txt", "rw").getChannel();
+        mem = fc.map(FileChannel.MapMode.READ_WRITE, 0, 1);
+      } catch(Exception e) {
+      }
+    }
+    @Override
+    public void run() {
+      System.out.println("*** Running monitor thread");
+      try {
+        while(true){
+          byte req = mem.get(0);
+          Thread.sleep(2);
+          if(req != 0 ) {
+            mem.put(0, (byte)0);
+            selectFunction(req);
+            req = 0;
+          }
+        }
+      } catch(Exception e) {
+      }
+    }
+    private void selectFunction(byte b) {
+      switch(b) {
+        case 1  : LogManager.getRootLogger().setLevel(Level.ALL);
+          break;
+        case 2  : LogManager.getRootLogger().setLevel(Level.TRACE);
+          break;
+        case 3  : LogManager.getRootLogger().setLevel(Level.DEBUG);
+          break;
+        case 4  : LogManager.getRootLogger().setLevel(Level.INFO);
+          break;
+        case 5  : LogManager.getRootLogger().setLevel(Level.WARN);
+          break;
+        case 6  : LogManager.getRootLogger().setLevel(Level.FATAL);
+          break;
+        case 7  : LogManager.getRootLogger().setLevel(Level.ERROR);
+          break;
+        case 8  : LogManager.getRootLogger().setLevel(Level.OFF);
+          break;
+        case 9  : LogManager.getLogger(APP).setLevel(Level.ALL);
+          break;
+        case 10  : LogManager.getLogger(APP).setLevel(Level.TRACE);
+          break;
+        case 11  : LogManager.getLogger(APP).setLevel(Level.DEBUG);
+          break;
+        case 12  : LogManager.getLogger(APP).setLevel(Level.INFO);
+          break;
+        case 13  : LogManager.getLogger(APP).setLevel(Level.WARN);
+          break;
+        case 14  : LogManager.getLogger(APP).setLevel(Level.FATAL);
+          break;
+        case 15  : LogManager.getLogger(APP).setLevel(Level.ERROR);
+          break;
+        case 16  : LogManager.getLogger(APP).setLevel(Level.OFF);
+          break;
+        case 17  : LogManager.getLogger(JETTY).setLevel(Level.ALL);
+          break;
+        case 18  : LogManager.getLogger(JETTY).setLevel(Level.TRACE);
+          break;
+        case 19  : LogManager.getLogger(JETTY).setLevel(Level.DEBUG);
+          break;
+        case 20  : LogManager.getLogger(JETTY).setLevel(Level.INFO);
+          break;
+        case 21  : LogManager.getLogger(JETTY).setLevel(Level.WARN);
+          break;
+        case 22  : LogManager.getLogger(JETTY).setLevel(Level.FATAL);
+          break;
+        case 23  : LogManager.getLogger(JETTY).setLevel(Level.ERROR);
+          break;
+        case 24  : LogManager.getLogger(JETTY).setLevel(Level.OFF);
+          break;
+        case 25  : LogManager.getLogger(CXF).setLevel(Level.ALL);
+          break;
+        case 26  : LogManager.getLogger(CXF).setLevel(Level.TRACE);
+          break;
+        case 27  : LogManager.getLogger(CXF).setLevel(Level.DEBUG);
+          break;
+        case 28  : LogManager.getLogger(CXF).setLevel(Level.INFO);
+          break;
+        case 29  : LogManager.getLogger(CXF).setLevel(Level.WARN);
+          break;
+        case 30  : LogManager.getLogger(CXF).setLevel(Level.FATAL);
+          break;
+        case 31  : LogManager.getLogger(CXF).setLevel(Level.ERROR);
+          break;
+        case 32  : LogManager.getLogger(CXF).setLevel(Level.OFF);
+          break;
+        case 33  : LogManager.getLogger(SPRING).setLevel(Level.ALL);
+          break;
+        case 34  : LogManager.getLogger(SPRING).setLevel(Level.TRACE);
+          break;
+        case 35  : LogManager.getLogger(SPRING).setLevel(Level.DEBUG);
+          break;
+        case 36  : LogManager.getLogger(SPRING).setLevel(Level.INFO);
+          break;
+        case 37  : LogManager.getLogger(SPRING).setLevel(Level.WARN);
+          break;
+        case 38  : LogManager.getLogger(SPRING).setLevel(Level.FATAL);
+          break;
+        case 39  : LogManager.getLogger(SPRING).setLevel(Level.ERROR);
+          break;
+        case 40  : LogManager.getLogger(SPRING).setLevel(Level.OFF);
+          break;
+        default : break;
+      }
+    }
+  }
+
 
 }
