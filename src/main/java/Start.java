@@ -75,6 +75,7 @@ public class Start {
       logger.warn("spnego.conf=/etc/spnego.conf");
       logger.warn("spnego.properties=spnego.properties");
       logger.warn("spnego.realm=SU.SE");
+      logger.warn("spnego.kdc=kerberos.su.se");
       //Ehcache
       logger.warn("ehcache.maxElementsInMemory=10000");
       logger.warn("ehcache.eternal=false");
@@ -101,6 +102,7 @@ public class Start {
       properties.put("spnego.conf","/etc/spnego.conf");
       properties.put("spnego.properties", "spnego.properties");
       properties.put("spnego.realm", "SU.SE");
+      properties.put("spnego.kdc", "kerberos.su.se");
       //Ehcache
       properties.put("ehcache.maxElementsInMemory", "10000");
       properties.put("ehcache.eternal", "false");
@@ -123,6 +125,7 @@ public class Start {
     //extracting the config for the spnegp setup
     String spnegoConfigFileName     = properties.getProperty("spnego.conf");
     String spnegoRealm              = properties.getProperty("spnego.realm");
+    String spnegoKdc                = properties.getProperty("spnego.kdc");
     String spnegoPropertiesFileName = properties.getProperty("spnego.properties");
 
     try {
@@ -162,6 +165,7 @@ public class Start {
 
       System.setProperty("javax.security.auth.useSubjectCredsOnly","false");
       System.setProperty("java.security.auth.login.config", "=file:" + spnegoConfigFileName);
+      System.setProperty("java.security.krb5.kdc",spnegoKdc);
       SpnegoLoginService sLoginService = new SpnegoLoginService(spnegoRealm);
       sLoginService.setConfig(spnegoPropertiesFileName);
       context.getSecurityHandler().setLoginService(sLoginService);
@@ -192,6 +196,7 @@ public class Start {
     if(properties.get("spnego.conf") == null) {notFoundList.add("spnego.conf");}
     if(properties.get("spnego.properties") == null) {notFoundList.add("spnego.properties");}
     if(properties.get("spnego.realm") == null) {notFoundList.add("spnego.realm");}
+    if(properties.get("spnego.kdc") == null) {notFoundList.add("spnego.kdc");}
     if(properties.get("ehcache.maxElementsInMemory") == null) {notFoundList.add("ehcache.maxElementsInMemory");}
     if(properties.get("ehcache.eternal") == null) {notFoundList.add("ehcache.eternal");}
     if(properties.get("ehcache.timeToIdleSeconds") == null) {notFoundList.add("ehcache.timeToIdleSeconds");}
