@@ -238,7 +238,7 @@ public class Start {
     }
     @Override
     public void run() {
-      System.out.println("*** Running monitor thread");
+      logger.info("Running monitor thread");
       try {
         while(true){
           byte req = mem.get(0);
