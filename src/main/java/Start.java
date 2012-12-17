@@ -31,6 +31,12 @@ import java.util.*;
 public class Start {
   private static final org.apache.log4j.Logger logger = org.apache.log4j.Logger.getLogger(Start.class);
   public static void main(String[] args) {
+    String logfile = System.getProperty("log.file");
+    if(logfile != null) {
+      ((org.apache.log4j.DailyRollingFileAppender)LogManager.getRootLogger().getAppender("A")).setFile(logfile);
+      ((org.apache.log4j.DailyRollingFileAppender)LogManager.getRootLogger().getAppender("A")).activateOptions();
+    }
+
     if(System.getProperty("DEBUG") != null) {
       LogManager.getRootLogger().setLevel(Level.DEBUG);
     }
@@ -163,6 +169,7 @@ public class Start {
 
       server.setHandler(handlers);
 
+      System.setProperty("java.security.krb5.realm", spnegoRealm);
       System.setProperty("javax.security.auth.useSubjectCredsOnly","false");
       System.setProperty("java.security.auth.login.config", "=file:" + spnegoConfigFileName);
       System.setProperty("java.security.krb5.kdc",spnegoKdc);
@@ -229,7 +236,7 @@ public class Start {
 
     public MonitorThread() {
       setDaemon(true);
-      setName("StopMonitor");
+      setName("MonitorThread");
       try {
         fc = new RandomAccessFile("/tmp/cxf-server-tmp.txt", "rw").getChannel();
         mem = fc.map(FileChannel.MapMode.READ_WRITE, 0, 1);
