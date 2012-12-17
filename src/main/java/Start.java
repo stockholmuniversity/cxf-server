@@ -123,6 +123,7 @@ public class Start {
     // End Check if properties file is defined as define argument
 
     int httpPort        = Integer.parseInt(properties.getProperty("http.port").trim());
+    String jettyBindAddress = properties.getProperty("bind.address");
     // extracting the config properties for ssl setup
     boolean sslEnabled  = Boolean.parseBoolean(properties.getProperty("ssl.enabled"));
     String sslKeystore  = properties.getProperty("ssl.keystore");
@@ -142,6 +143,9 @@ public class Start {
         SslSocketConnector connector = new SslSocketConnector();
 
         connector.setPort(httpPort);
+        if(jettyBindAddress != null && jettyBindAddress.length() > 0) {
+          connector.setHost(jettyBindAddress);
+        }
         connector.setKeystore(sslKeystore);
         connector.setPassword(sslPassword);
 
@@ -149,7 +153,9 @@ public class Start {
       } else {
         SocketConnector connector = new SocketConnector();
         connector.setPort(httpPort);
-
+        if(jettyBindAddress != null && jettyBindAddress.length() > 0) {
+          connector.setHost(jettyBindAddress);
+        }
         server.setConnectors(new Connector[]{connector});
       }
 
