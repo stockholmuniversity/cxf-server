@@ -1,4 +1,6 @@
-/*
+package se.su.it.svc;
+
+/**
  * Copyright (c) 2013, IT Services, Stockholm University
  * All rights reserved.
  *
@@ -29,21 +31,13 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package se.su.it.svc;
-
-import org.apache.log4j.Level;
-import org.apache.log4j.LogManager;
-import org.apache.log4j.Logger;
 import org.eclipse.jetty.http.HttpHeaders;
 import org.eclipse.jetty.security.ServerAuthException;
 import org.eclipse.jetty.security.UserAuthentication;
 import org.eclipse.jetty.security.authentication.SpnegoAuthenticator;
 import org.eclipse.jetty.server.Authentication;
 import org.eclipse.jetty.server.UserIdentity;
-import org.eclipse.jetty.servlet.ServletHandler;
-import org.eclipse.jetty.util.log.Log;
 
-import javax.servlet.ServletContext;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
@@ -58,8 +52,6 @@ import org.spocp.client.SPOCPConnectionFactoryImpl;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
-import java.util.Enumeration;
-
 
 public class SuCxfAuthenticator extends SpnegoAuthenticator {
   private static final org.apache.log4j.Logger logger = org.apache.log4j.Logger.getLogger(SuCxfAuthenticator.class);

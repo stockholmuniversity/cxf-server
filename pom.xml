@@ -45,7 +45,7 @@
     <dependency>
       <groupId>org.spocp.jspocp</groupId>
       <artifactId>jspocp</artifactId>
-      <version>1.1</version>
+      <version>1.2</version>
       <exclusions>
         <exclusion>  <!-- declare the exclusion here -->
           <groupId>commons-logging</groupId>
