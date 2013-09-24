@@ -91,7 +91,7 @@ public class SuCxfAuthenticator extends SpnegoAuthenticator {
         return Authentication.SEND_CONTINUE;
       } catch (IOException ioe) {
         logger.debug("SpengoAuthenticator: Exception when sending challenge, exception was: " + ioe.getMessage());
-        return Authentication.SEND_CONTINUE;
+        throw new ServerAuthException(ioe);
       }
     } else if (header != null && header.startsWith(HttpHeaders.NEGOTIATE)) {
       String spnegoToken = header.substring(10);
