@@ -76,7 +76,8 @@ public class FilterHandler extends AbstractHandler {
   public final void handle(String target, Request baseRequest, HttpServletRequest request, HttpServletResponse response)
       throws IOException, ServletException {
 
-    if (baseRequest.getRequestURI().equalsIgnoreCase("/status.html")) {
+    if (baseRequest.getRequestURI().equalsIgnoreCase("/status.html")
+        || baseRequest.getRequestURI().equalsIgnoreCase("/")) {
       response.setContentType("text/html");
       response.setStatus(HttpServletResponse.SC_OK);
       Properties versionProps = new Properties();

@@ -79,17 +79,15 @@ public class SuCxfAuthenticator extends SpnegoAuthenticator {
     HttpServletRequest req = (HttpServletRequest) request;
     HttpServletResponse res = (HttpServletResponse) response;
 
-    logger.info("Intercepting request from " + req.getRemoteUser() +  ".");
+    logger.info("Intercepted request for validation.");
 
 
     String header = req.getHeader(HttpHeaders.AUTHORIZATION);
 
     if (!mandatory || isWsdlRequest(req)) {
-      logger.info("Validation is not mandatory for request from " + req.getRemoteUser() + " deferring authentication.");
+      logger.debug("Validation is not mandatory for request, deferring authentication.");
       return _deferred;
     }
-
-    logger.info("Validating request from " + req.getRemoteUser());
 
     // check to see if we have authorization headers required to continue
     if (header == null) {
@@ -130,9 +128,9 @@ public class SuCxfAuthenticator extends SpnegoAuthenticator {
       ((HttpServletResponse) response).setHeader(HttpHeaders.WWW_AUTHENTICATE, "realm=\"" + _loginService.getName() + '"');
       ((HttpServletResponse) response).sendError(HttpServletResponse.SC_UNAUTHORIZED);
       return Authentication.SEND_CONTINUE;
-    } catch (Exception e) {
-      logger.error("SpengoAuthenticator: Exception when sending SC_UNAUTHORIZED)", e);
-      return Authentication.SEND_CONTINUE;
+    } catch (IOException ioe) {
+      // throw new ServerAuthException(ioe);
+      return Authentication.UNAUTHENTICATED;
     }
   }
 
