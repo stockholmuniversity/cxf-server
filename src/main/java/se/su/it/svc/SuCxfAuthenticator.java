@@ -76,19 +76,20 @@ public class SuCxfAuthenticator extends SpnegoAuthenticator {
                                               final ServletResponse response,
                                               final boolean mandatory) throws ServerAuthException {
 
-    logger.info("Intercepting request from " + request.getRemoteAddr() +  ".");
-
     HttpServletRequest req = (HttpServletRequest) request;
     HttpServletResponse res = (HttpServletResponse) response;
+
+    logger.info("Intercepting request from " + req.getRemoteUser() +  ".");
+
 
     String header = req.getHeader(HttpHeaders.AUTHORIZATION);
 
     if (!mandatory || isWsdlRequest(req)) {
-      logger.info("Validation is not mandatory for request from " + request.getRemoteAddr() + " deferring authentication.");
+      logger.info("Validation is not mandatory for request from " + req.getRemoteUser() + " deferring authentication.");
       return _deferred;
     }
 
-    logger.info("Validating request from " + request.getRemoteAddr());
+    logger.info("Validating request from " + req.getRemoteUser());
 
     // check to see if we have authorization headers required to continue
     if (header == null) {
@@ -185,7 +186,6 @@ public class SuCxfAuthenticator extends SpnegoAuthenticator {
         }
       } catch (Exception ex) {
         logger.error("Could not check SPOCP Role: " + role, ex);
-        ex.printStackTrace();
       } finally {
         try {
           if (spocp != null) {
