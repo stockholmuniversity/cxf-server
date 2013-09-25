@@ -112,9 +112,8 @@ public class SuCxfAuthenticator extends SpnegoAuthenticator {
       UserIdentity user = _loginService.login(null, spnegoToken);
 
       if (user != null) {
-
         if (checkRole(user.getUserPrincipal().getName(), ((HttpServletRequest) request).getRequestURI())) {
-          logger.info("SpengoAuthenticator:" + user.getUserPrincipal().getName() + " authenticated!");
+          logger.info("SpengoAuthenticator:" + user.getUserPrincipal().getName() + " authorized!");
           return new UserAuthentication(getAuthMethod(), user);
         }
         logger.info("SpengoAuthenticator: User <" + user.getUserPrincipal().getName() + "> Did not pass spocp rule check!");
@@ -129,7 +128,6 @@ public class SuCxfAuthenticator extends SpnegoAuthenticator {
       ((HttpServletResponse) response).sendError(HttpServletResponse.SC_UNAUTHORIZED);
       return Authentication.SEND_CONTINUE;
     } catch (IOException ioe) {
-      // throw new ServerAuthException(ioe);
       return Authentication.UNAUTHENTICATED;
     }
   }

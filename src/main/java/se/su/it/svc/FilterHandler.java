@@ -58,10 +58,10 @@ public class FilterHandler extends AbstractHandler {
 
   /**
    *
-   * @param tmpDirx
+   * @param tmpDir
    */
-  public FilterHandler(final String tmpDirx) {
-    this.tmpDir = tmpDirx;
+  public FilterHandler(final String tmpDir) {
+    this.tmpDir = tmpDir;
   }
 
   /**
