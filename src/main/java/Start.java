@@ -46,7 +46,9 @@ import org.eclipse.jetty.server.ssl.SslSocketConnector;
 import org.eclipse.jetty.webapp.WebAppContext;
 import org.eclipse.jetty.util.log.StdErrLog;
 import se.su.it.svc.FilterHandler;
+import se.su.it.svc.SpocpRoleAuthorizor;
 import se.su.it.svc.SuCxfAuthenticator;
+import sun.security.jgss.GSSCredentialImpl;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -54,6 +56,7 @@ import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.net.JarURLConnection;
 import java.net.URL;
+import java.net.URLClassLoader;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
 import java.util.*;
@@ -199,6 +202,11 @@ public class Start {
       context.setContextPath("/");
       context.setWar(warFile.getAbsolutePath());
 
+      // Add webapp to threads context classpath
+      ClassLoader ctcl = Thread.currentThread().getContextClassLoader();
+      URLClassLoader urlcl = new URLClassLoader(new URL[]{ webbAppFp.toURI().toURL() }, ctcl);
+      Thread.currentThread().setContextClassLoader(urlcl);
+
       FilterHandler fh = new FilterHandler(context.getTempDirectory().toString());
 
       HandlerList handlers = new HandlerList();
@@ -213,7 +221,7 @@ public class Start {
       SpnegoLoginService sLoginService = new SpnegoLoginService(spnegoRealm);
       sLoginService.setConfig(spnegoPropertiesFileName);
       context.getSecurityHandler().setLoginService(sLoginService);
-      context.getSecurityHandler().setAuthenticator(new SuCxfAuthenticator(context));
+      context.getSecurityHandler().setAuthenticator(new SuCxfAuthenticator());
 
       Thread monitor = new MonitorThread();
       monitor.start();

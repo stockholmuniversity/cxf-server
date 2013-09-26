@@ -31,38 +31,20 @@ package se.su.it.svc;
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.eclipse.jetty.http.HttpHeaders;
 import org.eclipse.jetty.security.ServerAuthException;
 import org.eclipse.jetty.security.UserAuthentication;
 import org.eclipse.jetty.security.authentication.SpnegoAuthenticator;
 import org.eclipse.jetty.server.Authentication;
 import org.eclipse.jetty.server.UserIdentity;
 import org.eclipse.jetty.webapp.WebAppContext;
-import org.spocp.client.SPOCPConnection;
-import org.spocp.client.SPOCPConnectionFactory;
-import org.spocp.client.SPOCPConnectionFactoryImpl;
-import org.spocp.client.SPOCPResult;
 
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Method;
 
 public class SuCxfAuthenticator extends SpnegoAuthenticator {
 
-  private static final int SPNEGO_TOKEN_DEFAULT_LENGTH = 10;
-  private static final int SPOCP_DEFAULT_PORT = 4751;
-  private static final String SPOCP_DEFAULT_SERVER = "spocp.su.se";
   private static final org.apache.log4j.Logger logger = org.apache.log4j.Logger.getLogger(SuCxfAuthenticator.class);
-  private WebAppContext myContext = null;
-
-  public SuCxfAuthenticator(WebAppContext context) {
-    super();
-    myContext = context;
-  }
 
   /**
    *
@@ -75,132 +57,29 @@ public class SuCxfAuthenticator extends SpnegoAuthenticator {
   public final Authentication validateRequest(final ServletRequest request,
                                               final ServletResponse response,
                                               final boolean mandatory) throws ServerAuthException {
-
-    HttpServletRequest req = (HttpServletRequest) request;
-    HttpServletResponse res = (HttpServletResponse) response;
-
-    logger.info("Intercepted request for validation.");
-
-
-    String header = req.getHeader(HttpHeaders.AUTHORIZATION);
-
-    if (!mandatory || isWsdlRequest(req)) {
-      logger.debug("Validation is not mandatory for request, deferring authentication.");
+    if (isWsdlRequest(request)) {
+      logger.debug("WSDL request, sending deferred.");
       return _deferred;
     }
 
-    // check to see if we have authorization headers required to continue
-    if (header == null) {
+    Authentication authentication = super.validateRequest(request, response, mandatory);
 
-      try {
-        if (_deferred.isDeferred(res)) {
-          logger.info("Request is not authenticated.");
-          return Authentication.UNAUTHENTICATED;
+    if (authentication instanceof UserAuthentication) {
+      UserAuthentication userAuthentication = (UserAuthentication) authentication;
+      UserIdentity identity = userAuthentication.getUserIdentity();
+
+      if (identity != null && identity.getUserPrincipal() != null) {
+        HttpServletRequest httpRequest = ((HttpServletRequest) request);
+
+        if (SpocpRoleAuthorizor.getInstance().checkRole(identity.getUserPrincipal().getName(), httpRequest.getRequestURI())) {
+          return authentication;
         }
-
-        logger.info("SpengoAuthenticator: Sending challenge");
-        res.setHeader(HttpHeaders.WWW_AUTHENTICATE, HttpHeaders.NEGOTIATE);
-        res.sendError(HttpServletResponse.SC_UNAUTHORIZED);
-        return Authentication.SEND_CONTINUE;
-      } catch (IOException ioe) {
-        throw new ServerAuthException(ioe);
       }
 
-    } else if (header.startsWith(HttpHeaders.NEGOTIATE)) {
-      String spnegoToken = header.substring(SPNEGO_TOKEN_DEFAULT_LENGTH);
-
-      UserIdentity user = _loginService.login(null, spnegoToken);
-
-      if (user != null) {
-        if (checkRole(user.getUserPrincipal().getName(), ((HttpServletRequest) request).getRequestURI())) {
-          logger.info("SpengoAuthenticator:" + user.getUserPrincipal().getName() + " authorized!");
-          return new UserAuthentication(getAuthMethod(), user);
-        }
-        logger.info("SpengoAuthenticator: User <" + user.getUserPrincipal().getName() + "> Did not pass spocp rule check!");
-      } else {
-        logger.info("SpengoAuthenticator: Authorization failed, no principal!");
-      }
-    }
-
-    try {
-      logger.info("SpengoAuthenticator: Authorization failed!");
-      ((HttpServletResponse) response).setHeader(HttpHeaders.WWW_AUTHENTICATE, "realm=\"" + _loginService.getName() + '"');
-      ((HttpServletResponse) response).sendError(HttpServletResponse.SC_UNAUTHORIZED);
-      return Authentication.SEND_CONTINUE;
-    } catch (IOException ioe) {
       return Authentication.UNAUTHENTICATED;
     }
-  }
 
-  /**
-   *
-   * @param uid
-   * @param rURI
-   * @return
-   */
-  public final boolean checkRole(String uid, String rURI) {
-    boolean ok = false;
-    String trueUid = uid.replaceAll("/.*$", "");
-    trueUid = trueUid.replaceAll("@.*$", "");
-
-    String theClass = "se.su.it.svc." + rURI.replaceAll("/", "");
-    String role = "";
-    if (theClass.equals("se.su.it.svc.")) {
-      return false;
-    }//No service, wsdl or status.html on url
-    try {
-      Class annoClass = this.myContext.getClassLoader().loadClass(theClass);
-      Annotation[] annotations = annoClass.getAnnotations();
-      for (Annotation annotation : annotations) {
-        if (annotation.annotationType().getName().equalsIgnoreCase("se.su.it.svc.annotations.SuCxfSvcSpocpRole")) {
-          Method[] methods = annotation.getClass().getMethods();
-          for (Method m : methods) {
-            if (m.getName().equals("role")) {
-              role = (String) m.invoke(annotation, null);
-              logger.debug("Using SPOCP Role: " + role);
-              break;
-            }
-          }
-        }
-      }
-    } catch (Exception e) {
-      logger.error("Could not figure out class from request URI:" + rURI + ". Faulty classname:" + theClass, e);
-      return ok;
-    }
-    if (role != null && role.length() > 0) {
-      SPOCPConnection spocp = null;
-      SPOCPConnectionFactoryImpl impl = new SPOCPConnectionFactoryImpl();
-      impl.setPort(SPOCP_DEFAULT_PORT);
-      impl.setServer(SPOCP_DEFAULT_SERVER);
-      try {
-        SPOCPConnectionFactory factory = impl;
-        spocp = factory.getConnection();
-        if (spocp != null) {
-          String q = "(j2ee-role (identity (uid " + trueUid + ") (realm SU.SE)) (role " + role + "))";
-          SPOCPResult res = spocp.query("/", q);
-          ok = res.getResultCode() == SPOCPResult.SPOCP_SUCCESS;
-        }
-      } catch (Exception ex) {
-        logger.error("Could not check SPOCP Role: " + role, ex);
-      } finally {
-        try {
-          if (spocp != null) {
-            spocp.logout();
-          }
-        } catch (Exception ignore) {
-        }
-      }
-      try {
-        if (spocp != null) {
-          spocp.logout();
-        }
-      } catch (Exception ignore) {
-      }
-    } else {
-      logger.info("No SPOCP Role authentication for: " + theClass + ". Call will be let through.");
-      return true;
-    }
-    return (ok);
+    return authentication;
   }
 
   /**
@@ -208,8 +87,15 @@ public class SuCxfAuthenticator extends SpnegoAuthenticator {
    * @param request
    * @return
    */
-  private boolean isWsdlRequest(final HttpServletRequest request) {
-    return (request != null && request.getQueryString() != null && request.getQueryString().equalsIgnoreCase("wsdl"));
+  private boolean isWsdlRequest(final ServletRequest request) {
+    if (request instanceof HttpServletRequest) {
+      HttpServletRequest httpRequest = (HttpServletRequest) request;
+      String query = httpRequest.getQueryString();
+
+      return query != null && query.equalsIgnoreCase("wsdl");
+    }
+
+    return false;
   }
 
 }
