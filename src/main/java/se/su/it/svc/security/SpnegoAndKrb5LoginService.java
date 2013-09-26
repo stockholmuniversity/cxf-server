@@ -63,7 +63,7 @@ public final class SpnegoAndKrb5LoginService extends AbstractLifeCycle implement
     gssContext = setupContext(targetName);
 
     if (gssContext == null) {
-      throw new IllegalStateException("Failed to establish GSSContext");
+      throw new IllegalStateException("GSS: Failed to establish GSSContext");
     }
   }
 
@@ -89,19 +89,20 @@ public final class SpnegoAndKrb5LoginService extends AbstractLifeCycle implement
       String clientName = gssContext.getSrcName().toString();
       String role = clientName.substring(clientName.indexOf('@') + 1);
 
-      LOG.debug("GSSContext: established a security context");
-      LOG.debug("Client Principal is: " + gssContext.getSrcName());
-      LOG.debug("Server Principal is: " + gssContext.getTargName());
-      LOG.debug("Client Default Role: " + role);
+      LOG.debug("GSS: Established a security context");
+      LOG.debug("GSS: Client Principal is: " + gssContext.getSrcName());
+      LOG.debug("GSS: Server Principal is: " + gssContext.getTargName());
+      LOG.debug("GSS: Client Default Role: " + role);
 
       SpnegoUserPrincipal user = new SpnegoUserPrincipal(clientName, authToken);
       Subject subject = new Subject();
       subject.getPrincipals().add(user);
 
-      return service.newUserIdentity(subject,user, new String[]{role});
+      return service.newUserIdentity(subject, user, new String[]{role});
     } catch (GSSException gsse) {
       // Can't throw exception forward due to interface implementation
-      LOG.warn("Failed while validating credentials: " + gsse.getMessage());
+      LOG.info("GSS: Failed while validating credentials: " + gsse.getMessage());
+      LOG.debug(gsse);
     }
 
     return null;
