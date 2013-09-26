@@ -66,9 +66,6 @@ public class SpnegoAndKrb5LoginService extends AbstractLifeCycle implements Logi
     return name;
   }
 
-  /**
-   * Overridden to support both krb5 & spnego mechs.
-   */
   public UserIdentity login(String username, Object credentials) {
     UserIdentity userIdentity = null;
 
