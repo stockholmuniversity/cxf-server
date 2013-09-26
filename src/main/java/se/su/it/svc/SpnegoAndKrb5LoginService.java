@@ -46,7 +46,7 @@ import javax.security.auth.Subject;
 /**
  * Handle Negotiate requests for mechs SPNEGO & Krb5, based on org.eclipse.jetty.security.SpnegoLoginService
  */
-public class SpnegoAndKrb5LoginService extends AbstractLifeCycle implements LoginService {
+public final class SpnegoAndKrb5LoginService extends AbstractLifeCycle implements LoginService {
 
   private static final Logger LOG = Log.getLogger(SpnegoAndKrb5LoginService.class);
 
@@ -54,82 +54,108 @@ public class SpnegoAndKrb5LoginService extends AbstractLifeCycle implements Logi
   public static final String OID_MECH_SPNEGO = "1.3.6.1.5.5.2";
 
   private String name;
-  private String targetName;
   private IdentityService service;
+  private GSSContext gssContext;
 
-  public SpnegoAndKrb5LoginService( String name, String targetName ) throws Exception{
+  public SpnegoAndKrb5LoginService( String name, String targetName ) throws IllegalStateException, GSSException {
     this.name = name;
-    this.targetName = targetName;
+
+    gssContext = setupContext(targetName);
+
+    if (gssContext == null) {
+      throw new IllegalStateException("Failed to establish GSSContext");
+    }
   }
 
-  public String getName() {
+  public final String getName() {
     return name;
   }
 
-  public UserIdentity login(String username, Object credentials) {
-    UserIdentity userIdentity = null;
+  /**
+   * Login a user using GSSAPI through SPNEGO or KRB5 mechs.
+   *
+   * @param username will not be used, credentials contains all that's necessary.
+   * @param credentials a auth token String. Expect ClassCastException for anything else.
+   * @return a UserIdentity if we succeed or null if we don't.
+   */
+  public final UserIdentity login(String username, Object credentials) {
+    byte[] authToken = B64Code.decode((String)credentials);
 
-    String encodedAuthToken = (String)credentials;
-
-    byte[] authToken = B64Code.decode(encodedAuthToken);
-
-    GSSManager manager = GSSManager.getInstance();
     try {
-      Oid[] mechs = {
-              new Oid(OID_MECH_KRB5), // Krb5
-              new Oid(OID_MECH_SPNEGO) // Spnego
-      };
-
-      GSSName gssName = manager.createName(targetName, null);
-      GSSCredential serverCreds = manager.createCredential(gssName, GSSCredential.INDEFINITE_LIFETIME, mechs, GSSCredential.ACCEPT_ONLY);
-      GSSContext gContext = manager.createContext(serverCreds);
-
-      if (gContext == null) {
-        LOG.debug("SpnegoUserRealm: failed to establish GSSContext");
+      while (!gssContext.isEstablished()) {
+        authToken = gssContext.acceptSecContext(authToken,0,authToken.length);
       }
-      else {
-        while (!gContext.isEstablished()) {
-            authToken = gContext.acceptSecContext(authToken,0,authToken.length);
-        }
-        if (gContext.isEstablished()) {
-            String clientName = gContext.getSrcName().toString();
-            String role = clientName.substring(clientName.indexOf('@') + 1);
 
-            LOG.debug("SpnegoUserRealm: established a security context");
-            LOG.debug("Client Principal is: " + gContext.getSrcName());
-            LOG.debug("Server Principal is: " + gContext.getTargName());
-            LOG.debug("Client Default Role: " + role);
+      String clientName = gssContext.getSrcName().toString();
+      String role = clientName.substring(clientName.indexOf('@') + 1);
 
-            SpnegoUserPrincipal user = new SpnegoUserPrincipal(clientName, authToken);
+      LOG.debug("GSSContext: established a security context");
+      LOG.debug("Client Principal is: " + gssContext.getSrcName());
+      LOG.debug("Server Principal is: " + gssContext.getTargName());
+      LOG.debug("Client Default Role: " + role);
 
-            Subject subject = new Subject();
-            subject.getPrincipals().add(user);
+      SpnegoUserPrincipal user = new SpnegoUserPrincipal(clientName, authToken);
+      Subject subject = new Subject();
+      subject.getPrincipals().add(user);
 
-            userIdentity = service.newUserIdentity(subject,user, new String[]{role});
-        }
-      }
-    }
-    catch (GSSException gsse)
-    {
-      LOG.warn(gsse);
+      return service.newUserIdentity(subject,user, new String[]{role});
+    } catch (GSSException gsse) {
+      // Can't throw exception forward due to interface implementation
+      LOG.warn("Failed while validating credentials: " + gsse.getMessage());
     }
 
-    return userIdentity;
+    return null;
   }
 
-  public boolean validate(UserIdentity user) {
-    return false;
+  /**
+   * Validate a user identity.
+   *
+   * @param user the UserIdentity to validate.
+   * @return always false
+   * @see LoginService#validate(org.eclipse.jetty.server.UserIdentity)
+   */
+  public final boolean validate(UserIdentity user) {
+    return false; // A previously created user identity is never valid.
   }
 
-  public IdentityService getIdentityService() {
+  /**
+   * @see org.eclipse.jetty.security.LoginService#getIdentityService() ()
+   */
+  public final IdentityService getIdentityService() {
     return service;
   }
 
-  public void setIdentityService(IdentityService service) {
+  /**
+   * @see LoginService#setIdentityService(org.eclipse.jetty.security.IdentityService)
+   */
+  public final void setIdentityService(IdentityService service) {
     this.service = service;
   }
 
-  public void logout(UserIdentity user) {
-    // TODO: implement
+  /**
+   * Not implemented, not needed
+   */
+  public final void logout(UserIdentity user) {
+    // No need to implement.
+  }
+
+  /**
+   * Setup & return a GSSContext.
+   *
+   * @param targetName the target name (server principal) to use
+   * @return a GSSContext.
+   * @throws GSSException if something goes wrong with the setup of the context.
+   */
+  private static GSSContext setupContext(String targetName) throws GSSException {
+    Oid[] mechs = {
+            new Oid(OID_MECH_KRB5), // Krb5
+            new Oid(OID_MECH_SPNEGO) // Spnego
+    };
+
+    GSSManager manager = GSSManager.getInstance();
+    GSSName gssName = manager.createName(targetName, null);
+
+    GSSCredential serverCreds = manager.createCredential(gssName, GSSCredential.INDEFINITE_LIFETIME, mechs, GSSCredential.ACCEPT_ONLY);
+    return manager.createContext(serverCreds);
   }
 }
