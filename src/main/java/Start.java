@@ -43,9 +43,11 @@ import org.eclipse.jetty.server.handler.HandlerCollection;
 import org.eclipse.jetty.server.handler.HandlerList;
 import org.eclipse.jetty.server.nio.SelectChannelConnector;
 import org.eclipse.jetty.server.ssl.SslSocketConnector;
+import org.eclipse.jetty.util.resource.Resource;
 import org.eclipse.jetty.webapp.WebAppContext;
 import org.eclipse.jetty.util.log.StdErrLog;
 import se.su.it.svc.FilterHandler;
+import se.su.it.svc.SpnegoAndKrb5LoginService;
 import se.su.it.svc.SpocpRoleAuthorizor;
 import se.su.it.svc.SuCxfAuthenticator;
 import sun.security.jgss.GSSCredentialImpl;
@@ -218,9 +220,13 @@ public class Start {
       System.setProperty("javax.security.auth.useSubjectCredsOnly","false");
       System.setProperty("java.security.auth.login.config", "=file:" + spnegoConfigFileName);
       System.setProperty("java.security.krb5.kdc",spnegoKdc);
-      SpnegoLoginService sLoginService = new SpnegoLoginService(spnegoRealm);
-      sLoginService.setConfig(spnegoPropertiesFileName);
-      context.getSecurityHandler().setLoginService(sLoginService);
+
+      Properties spnegoProperties = new Properties();
+      Resource resource = Resource.newResource(spnegoPropertiesFileName);
+      spnegoProperties.load(resource.getInputStream());
+
+      SpnegoAndKrb5LoginService loginService = new SpnegoAndKrb5LoginService(spnegoRealm, spnegoProperties.getProperty("targetName"));
+      context.getSecurityHandler().setLoginService(loginService);
       context.getSecurityHandler().setAuthenticator(new SuCxfAuthenticator());
 
       Thread monitor = new MonitorThread();

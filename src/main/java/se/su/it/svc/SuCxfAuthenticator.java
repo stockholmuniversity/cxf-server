@@ -36,7 +36,6 @@ import org.eclipse.jetty.security.UserAuthentication;
 import org.eclipse.jetty.security.authentication.SpnegoAuthenticator;
 import org.eclipse.jetty.server.Authentication;
 import org.eclipse.jetty.server.UserIdentity;
-import org.eclipse.jetty.webapp.WebAppContext;
 
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
