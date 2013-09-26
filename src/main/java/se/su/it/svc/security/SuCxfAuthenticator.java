@@ -1,4 +1,4 @@
-package se.su.it.svc;
+package se.su.it.svc.security;
 
 /**
  * Copyright (c) 2013, IT Services, Stockholm University

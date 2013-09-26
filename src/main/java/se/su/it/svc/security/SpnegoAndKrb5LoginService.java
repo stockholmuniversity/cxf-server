@@ -29,7 +29,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package se.su.it.svc;
+package se.su.it.svc.security;
 
 import org.eclipse.jetty.security.IdentityService;
 import org.eclipse.jetty.security.LoginService;

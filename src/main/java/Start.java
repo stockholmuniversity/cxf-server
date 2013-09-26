@@ -29,32 +29,22 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.apache.log4j.ConsoleAppender;
 import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
 import org.apache.log4j.LogManager;
-import org.apache.log4j.PatternLayout;
-import org.eclipse.jetty.security.SpnegoLoginService;
 import org.eclipse.jetty.server.Connector;
 import org.eclipse.jetty.server.Handler;
 import org.eclipse.jetty.server.bio.SocketConnector;
 import org.eclipse.jetty.server.handler.DefaultHandler;
-import org.eclipse.jetty.server.handler.HandlerCollection;
 import org.eclipse.jetty.server.handler.HandlerList;
-import org.eclipse.jetty.server.nio.SelectChannelConnector;
 import org.eclipse.jetty.server.ssl.SslSocketConnector;
 import org.eclipse.jetty.util.resource.Resource;
 import org.eclipse.jetty.webapp.WebAppContext;
-import org.eclipse.jetty.util.log.StdErrLog;
-import se.su.it.svc.FilterHandler;
-import se.su.it.svc.SpnegoAndKrb5LoginService;
-import se.su.it.svc.SpocpRoleAuthorizor;
-import se.su.it.svc.SuCxfAuthenticator;
-import sun.security.jgss.GSSCredentialImpl;
+import se.su.it.svc.filter.FilterHandler;
+import se.su.it.svc.security.SpnegoAndKrb5LoginService;
+import se.su.it.svc.security.SuCxfAuthenticator;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.net.JarURLConnection;
 import java.net.URL;
