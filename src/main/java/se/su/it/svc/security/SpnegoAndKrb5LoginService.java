@@ -48,10 +48,17 @@ import javax.security.auth.Subject;
  */
 public final class SpnegoAndKrb5LoginService extends AbstractLifeCycle implements LoginService {
 
-  private static final Logger LOG = Log.getLogger(SpnegoAndKrb5LoginService.class);
-
+  /**
+   * OID for mech Krb5.
+   */
   public static final String OID_MECH_KRB5   = "1.2.840.113554.1.2.2";
+
+  /**
+   * OID for mech spnego.
+   */
   public static final String OID_MECH_SPNEGO = "1.3.6.1.5.5.2";
+
+  private static final Logger LOG = Log.getLogger(SpnegoAndKrb5LoginService.class);
 
   private String name;
   private IdentityService service;
@@ -67,6 +74,9 @@ public final class SpnegoAndKrb5LoginService extends AbstractLifeCycle implement
     }
   }
 
+  /**
+   * @see org.eclipse.jetty.security.LoginService#getName()
+   */
   public final String getName() {
     return name;
   }
