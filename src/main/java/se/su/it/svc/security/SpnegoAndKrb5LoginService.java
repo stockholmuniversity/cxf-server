@@ -96,11 +96,12 @@ public final class SpnegoAndKrb5LoginService extends AbstractLifeCycle implement
         authToken = gssContext.acceptSecContext(authToken,0,authToken.length);
       }
 
-      String clientName = gssContext.getSrcName().toString();
+      GSSName srcName = gssContext.getSrcName();
+      String clientName = srcName.toString();
       String role = clientName.substring(clientName.indexOf('@') + 1);
 
       LOG.debug("GSS: Established a security context");
-      LOG.debug("GSS: Client Principal is: " + gssContext.getSrcName());
+      LOG.debug("GSS: Client Principal is: " + srcName);
       LOG.debug("GSS: Server Principal is: " + gssContext.getTargName());
       LOG.debug("GSS: Client Default Role: " + role);
 
