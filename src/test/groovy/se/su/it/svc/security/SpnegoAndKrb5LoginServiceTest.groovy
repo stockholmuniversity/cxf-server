@@ -58,9 +58,8 @@ import static org.powermock.api.easymock.PowerMock.mockStatic
 import static org.powermock.api.easymock.PowerMock.replay
 import static org.powermock.api.easymock.PowerMock.verify
 
-
 @RunWith(PowerMockRunner.class)
-@PrepareForTest([ SpnegoAndKrb5LoginService, GSSManager ])
+@PrepareForTest([ SpnegoAndKrb5LoginService ])
 class SpnegoAndKrb5LoginServiceTest {
 
   @Rule

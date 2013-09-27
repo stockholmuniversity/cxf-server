@@ -40,13 +40,13 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 
 public class SpocpRoleAuthorizor {
+  public static final String SERVICE_PACKAGE = "se.su.it.svc.";
 
   private static SpocpRoleAuthorizor instance = new SpocpRoleAuthorizor();
 
   private static final int SPOCP_DEFAULT_PORT = 4751;
   private static final String SPOCP_DEFAULT_SERVER = "spocp.su.se";
   private static final org.apache.log4j.Logger logger = org.apache.log4j.Logger.getLogger(SpocpRoleAuthorizor.class);
-  private static final String SERVICE_PACKAGE = "se.su.it.svc.";
 
   private SPOCPConnectionFactoryImpl spocpConnectionFactory = new SPOCPConnectionFactoryImpl();
 
@@ -69,7 +69,7 @@ public class SpocpRoleAuthorizor {
     boolean authorized = false;
 
     String className = classNameFromURI(rURI);
-    if (className != null) {
+    if (uid != null && className != null) {
 
       String role = getRole(className);
       if (role != null && role.length() > 0) {
@@ -83,7 +83,7 @@ public class SpocpRoleAuthorizor {
     return authorized;
   }
 
-  private String getRole(String className) {
+  protected static String getRole(String className) {
     String role = null;
     ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
 
@@ -103,10 +103,18 @@ public class SpocpRoleAuthorizor {
     return role;
   }
 
-  private String classNameFromURI(String uri) {
-    String className = SERVICE_PACKAGE + uri.replaceAll("/", "");
+  protected static String classNameFromURI(String uri) {
+    String className = null;
 
-    return className.equals(SERVICE_PACKAGE) ? null : className;
+    if (uri != null) {
+      className = SERVICE_PACKAGE + uri.replaceAll("/", "");
+
+      if (className.equals(SERVICE_PACKAGE)) {
+        className = null;
+      }
+    }
+
+    return className;
   }
 
   private boolean doSpocpCall(String uid, String role) {

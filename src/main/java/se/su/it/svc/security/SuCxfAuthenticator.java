@@ -70,7 +70,8 @@ public class SuCxfAuthenticator extends SpnegoAuthenticator {
       if (identity != null && identity.getUserPrincipal() != null) {
         HttpServletRequest httpRequest = ((HttpServletRequest) request);
 
-        if (SpocpRoleAuthorizor.getInstance().checkRole(identity.getUserPrincipal().getName(), httpRequest.getRequestURI())) {
+        SpocpRoleAuthorizor authorizor = SpocpRoleAuthorizor.getInstance();
+        if (authorizor.checkRole(identity.getUserPrincipal().getName(), httpRequest.getRequestURI())) {
           return authentication;
         }
       }
