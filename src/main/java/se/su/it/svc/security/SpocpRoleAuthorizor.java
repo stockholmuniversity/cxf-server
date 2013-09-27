@@ -46,6 +46,7 @@ public class SpocpRoleAuthorizor {
   private static final int SPOCP_DEFAULT_PORT = 4751;
   private static final String SPOCP_DEFAULT_SERVER = "spocp.su.se";
   private static final org.apache.log4j.Logger logger = org.apache.log4j.Logger.getLogger(SpocpRoleAuthorizor.class);
+  private static final String SERVICE_PACKAGE = "se.su.it.svc.";
 
   private SPOCPConnectionFactoryImpl spocpConnectionFactory = new SPOCPConnectionFactoryImpl();
 
@@ -65,47 +66,21 @@ public class SpocpRoleAuthorizor {
    * @return
    */
   public final boolean checkRole(String uid, String rURI) {
-    boolean ok = false;
-    String trueUid = uid.replaceAll("/.*$", "");
-    trueUid = trueUid.replaceAll("@.*$", "");
+    boolean authorized = false;
 
-    String theClass = "se.su.it.svc." + rURI.replaceAll("/", "");
-    if (theClass.equals("se.su.it.svc.")) {
-      return false;
-    }//No service, wsdl or status.html on url
+    String className = classNameFromURI(rURI);
+    if (className != null) {
 
-    String role = getRole(theClass);
-
-    if (role != null && role.length() > 0) {
-      SPOCPConnection spocp = null;
-      try {
-        spocp = spocpConnectionFactory.getConnection();
-        if (spocp != null) {
-          String q = "(j2ee-role (identity (uid " + trueUid + ") (realm SU.SE)) (role " + role + "))";
-          SPOCPResult res = spocp.query("/", q);
-          ok = res.getResultCode() == SPOCPResult.SPOCP_SUCCESS;
-        }
-      } catch (Exception ex) {
-        logger.error("Could not check SPOCP Role: " + role, ex);
-      } finally {
-        try {
-          if (spocp != null) {
-            spocp.logout();
-          }
-        } catch (Exception ignore) {
-        }
+      String role = getRole(className);
+      if (role != null && role.length() > 0) {
+        authorized = doSpocpCall(uid.replaceAll("[/@].*$", ""), role);
+      } else {
+        logger.info("No SPOCP Role authentication for: " + className + ". Call will be let through.");
+        return true;
       }
-      try {
-        if (spocp != null) {
-          spocp.logout();
-        }
-      } catch (Exception ignore) {
-      }
-    } else {
-      logger.info("No SPOCP Role authentication for: " + theClass + ". Call will be let through.");
-      return true;
     }
-    return (ok);
+
+    return authorized;
   }
 
   private String getRole(String className) {
@@ -126,5 +101,35 @@ public class SpocpRoleAuthorizor {
     }
 
     return role;
+  }
+
+  private String classNameFromURI(String uri) {
+    String className = SERVICE_PACKAGE + uri.replaceAll("/", "");
+
+    return className.equals(SERVICE_PACKAGE) ? null : className;
+  }
+
+  private boolean doSpocpCall(String uid, String role) {
+    boolean result = false;
+
+    SPOCPConnection spocp = null;
+    try {
+      spocp = spocpConnectionFactory.getConnection();
+      if (spocp != null) {
+        String q = "(j2ee-role (identity (uid " + uid + ") (realm SU.SE)) (role " + role + "))";
+        SPOCPResult res = spocp.query("/", q);
+        result = res.getResultCode() == SPOCPResult.SPOCP_SUCCESS;
+      }
+    } catch (Exception ex) {
+      logger.error("Could not check SPOCP Role: " + role, ex);
+    } finally {
+      try {
+        if (spocp != null) {
+          spocp.logout();
+        }
+      } catch (Exception ignore) {}
+    }
+
+    return result;
   }
 }
