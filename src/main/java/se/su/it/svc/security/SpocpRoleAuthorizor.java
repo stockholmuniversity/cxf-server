@@ -49,7 +49,7 @@ public class SpocpRoleAuthorizor {
 
   private SPOCPConnectionFactoryImpl spocpConnectionFactory = new SPOCPConnectionFactoryImpl();
 
-  public SpocpRoleAuthorizor() {
+  private SpocpRoleAuthorizor() {
     spocpConnectionFactory.setPort(SPOCP_DEFAULT_PORT);
     spocpConnectionFactory.setServer(SPOCP_DEFAULT_SERVER);
   }
