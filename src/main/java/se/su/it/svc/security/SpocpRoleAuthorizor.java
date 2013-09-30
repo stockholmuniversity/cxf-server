@@ -50,25 +50,35 @@ public class SpocpRoleAuthorizor {
 
   private SPOCPConnectionFactoryImpl spocpConnectionFactory = new SPOCPConnectionFactoryImpl();
 
+  /**
+   * Create a new authorizor & set up the spocp connection factory
+   */
   private SpocpRoleAuthorizor() {
     spocpConnectionFactory.setPort(SPOCP_DEFAULT_PORT);
     spocpConnectionFactory.setServer(SPOCP_DEFAULT_SERVER);
   }
 
+  /**
+   * Get an instance of this singleton.
+   *
+   * @return a SpocpRoleAuthorizor
+   */
   public static SpocpRoleAuthorizor getInstance() {
     return instance;
   }
 
   /**
+   * Check the uid against a role for the class of the specified uri.
    *
-   * @param uid
-   * @param rURI
-   * @return
+   * @param uid the user uid.
+   * @param uri the uri to get the role for.
+   *
+   * @return true if the user has the role, otherwise false.
    */
-  public final boolean checkRole(String uid, String rURI) {
+  public final boolean checkRole(String uid, String uri) {
     boolean authorized = false;
 
-    String className = classNameFromURI(rURI);
+    String className = classNameFromURI(uri);
     if (uid != null && className != null) {
 
       String role = getRole(className);
@@ -83,6 +93,12 @@ public class SpocpRoleAuthorizor {
     return authorized;
   }
 
+  /**
+   * Get the role for the specified class name.
+   *
+   * @param className the name of the class to get the role for.
+   * @return the role name.
+   */
   protected static String getRole(String className) {
     String role = null;
     ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
@@ -103,6 +119,12 @@ public class SpocpRoleAuthorizor {
     return role;
   }
 
+  /**
+   * Get the class name corresponding to the specified uri.
+   *
+   * @param uri the uri.
+   * @return the class name.
+   */
   protected static String classNameFromURI(String uri) {
     String className = null;
 
@@ -117,6 +139,13 @@ public class SpocpRoleAuthorizor {
     return className;
   }
 
+  /**
+   * Make the SPOCP call to check if a user has a role.
+   *
+   * @param uid the uid of the user
+   * @param role the role to look for.
+   * @return true if the user has the role, false otherwise.
+   */
   private boolean doSpocpCall(String uid, String role) {
     boolean result = false;
 
