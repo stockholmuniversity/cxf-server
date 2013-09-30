@@ -1,5 +1,3 @@
-package se.su.it.svc.security;
-
 /**
  * Copyright (c) 2013, IT Services, Stockholm University
  * All rights reserved.
@@ -30,6 +28,8 @@ package se.su.it.svc.security;
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
+
+package se.su.it.svc.security;
 
 import org.eclipse.jetty.security.ServerAuthException;
 import org.eclipse.jetty.security.UserAuthentication;
