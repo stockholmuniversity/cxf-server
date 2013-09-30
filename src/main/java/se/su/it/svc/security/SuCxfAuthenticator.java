@@ -46,12 +46,16 @@ public class SuCxfAuthenticator extends SpnegoAuthenticator {
   private static final org.apache.log4j.Logger logger = org.apache.log4j.Logger.getLogger(SuCxfAuthenticator.class);
 
   /**
+   * Validate the request.
+   * Any wsdl-query will get through.
+   * Performs SPOCP query on anything else that's a UserAuthentication.
    *
-   * @param request
-   * @param response
-   * @param mandatory
-   * @return
-   * @throws ServerAuthException
+   * @param request the request
+   * @param response the response
+   * @param mandatory mandatory or not
+   * @return a Authentication
+   * @throws ServerAuthException if something goes wrong.
+   * @see SpnegoAuthenticator#validateRequest(javax.servlet.ServletRequest, javax.servlet.ServletResponse, boolean)
    */
   public final Authentication validateRequest(final ServletRequest request,
                                               final ServletResponse response,
@@ -61,7 +65,7 @@ public class SuCxfAuthenticator extends SpnegoAuthenticator {
       return _deferred;
     }
 
-    Authentication authentication = super.validateRequest(request, response, mandatory);
+    Authentication authentication = doValidateRequest(request, response, mandatory);
 
     if (authentication instanceof UserAuthentication) {
       UserAuthentication userAuthentication = (UserAuthentication) authentication;
@@ -83,7 +87,23 @@ public class SuCxfAuthenticator extends SpnegoAuthenticator {
   }
 
   /**
+   * Run the validateRequest super call. Exists solely to make testing of the validateRequest method simpler.
+   *
+   * @param request the request
+   * @param response the response
+   * @param mandatory mandatory or not
+   * @return a Authentication
+   * @throws ServerAuthException if something fails
+   */
+  private Authentication doValidateRequest(final ServletRequest request,
+                                              final ServletResponse response,
+                                              final boolean mandatory) throws ServerAuthException {
+    return super.validateRequest(request, response, mandatory);
+  }
+
+  /**
    * Utility method for figuring out if a request is done for a wsdl.
+   *
    * @param request
    * @return
    */
@@ -97,5 +117,4 @@ public class SuCxfAuthenticator extends SpnegoAuthenticator {
 
     return false;
   }
-
 }
