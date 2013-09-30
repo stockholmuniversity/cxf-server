@@ -60,29 +60,34 @@ public class SuCxfAuthenticator extends SpnegoAuthenticator {
   public final Authentication validateRequest(final ServletRequest request,
                                               final ServletResponse response,
                                               final boolean mandatory) throws ServerAuthException {
+    if (! (request instanceof HttpServletRequest)) {
+      throw new IllegalStateException("Got a request of illegal type '" + request.getClass().getName() + "', should be '" + IllegalStateException.class.getName() + "'.");
+    }
+
     if (isWsdlRequest(request)) {
       logger.debug("WSDL request, sending deferred.");
       return _deferred;
     }
 
     Authentication authentication = doValidateRequest(request, response, mandatory);
+    HttpServletRequest httpRequest = (HttpServletRequest) request;
 
     if (authentication instanceof UserAuthentication) {
       UserAuthentication userAuthentication = (UserAuthentication) authentication;
       UserIdentity identity = userAuthentication.getUserIdentity();
 
       if (identity != null && identity.getUserPrincipal() != null) {
-        HttpServletRequest httpRequest = ((HttpServletRequest) request);
-
         SpocpRoleAuthorizor authorizor = SpocpRoleAuthorizor.getInstance();
-        if (authorizor.checkRole(identity.getUserPrincipal().getName(), httpRequest.getRequestURI())) {
-          return authentication;
-        }
-      }
 
-      return Authentication.UNAUTHENTICATED;
+        if (! authorizor.checkRole(identity.getUserPrincipal().getName(), httpRequest.getRequestURI())) {
+          authentication = Authentication.UNAUTHENTICATED;
+        }
+      } else {
+        authentication = Authentication.UNAUTHENTICATED;
+      }
     }
 
+    logger.info("Authentication response to " + httpRequest.getRequestURI() + ":" + authentication);
     return authentication;
   }
 

@@ -29,16 +29,24 @@ import static org.powermock.api.easymock.PowerMock.replayAll
 @PrepareForTest([SuCxfAuthenticator, SpocpRoleAuthorizor])
 class SuCxfAuthenticatorTest {
 
+  @Test(expected = IllegalStateException)
+  void "validateRequest throw IllegalStateException if request != HttpServletRequest"() {
+    def mockRequest = createMock(ServletRequest)
+
+    new SuCxfAuthenticator().validateRequest(mockRequest, null, false)
+  }
+
   @Test
   void "validateRequest returns _deferred if WSDL"() {
     def deferred = createMock(DeferredAuthentication)
+    def mockRequest = createMock(HttpServletRequest)
 
     def mock = createPartialMock(SuCxfAuthenticator, 'isWsdlRequest')
     Whitebox.setInternalState(mock, "_deferred", deferred)
     expectPrivate(mock, 'isWsdlRequest', anyObject()).andReturn(true)
     replay(mock)
 
-    def ret = mock.validateRequest(null, null, false)
+    def ret = mock.validateRequest(mockRequest, null, false)
 
     assert ret == deferred
   }
@@ -65,12 +73,13 @@ class SuCxfAuthenticatorTest {
     def mockRequest        = createMock(HttpServletRequest)
     def mockResponse       = createMock(HttpServletResponse)
 
+    expect(mockRequest.getRequestURI()).andReturn('').anyTimes()
     expect(mockAuthentication.getUserIdentity()).andReturn(null)
 
     def mock = createPartialMock(SuCxfAuthenticator, 'doValidateRequest', 'isWsdlRequest')
     expectPrivate(mock, 'doValidateRequest', mockRequest, mockResponse, false).andReturn(mockAuthentication)
     expectPrivate(mock, 'isWsdlRequest', anyObject()).andReturn(false)
-    replayAll(mock, mockAuthentication)
+    replayAll(mock, mockAuthentication, mockRequest)
 
     def ret = mock.validateRequest(mockRequest, mockResponse, false)
 
@@ -84,13 +93,14 @@ class SuCxfAuthenticatorTest {
     def mockRequest        = createMock(HttpServletRequest)
     def mockResponse       = createMock(HttpServletResponse)
 
+    expect(mockRequest.getRequestURI()).andReturn('').anyTimes()
     expect(mockIdentity.getUserPrincipal()).andReturn(null)
     expect(mockAuthentication.getUserIdentity()).andReturn(mockIdentity)
 
     def mock = createPartialMock(SuCxfAuthenticator, 'doValidateRequest', 'isWsdlRequest')
     expectPrivate(mock, 'doValidateRequest', mockRequest, mockResponse, false).andReturn(mockAuthentication)
     expectPrivate(mock, 'isWsdlRequest', anyObject()).andReturn(false)
-    replayAll(mock, mockAuthentication, mockIdentity)
+    replayAll(mock, mockAuthentication, mockIdentity, mockRequest)
 
     def ret = mock.validateRequest(mockRequest, mockResponse, false)
 
@@ -109,7 +119,7 @@ class SuCxfAuthenticatorTest {
     mockStatic(SpocpRoleAuthorizor)
     expect(SpocpRoleAuthorizor.getInstance()).andReturn(mockAuthorizor)
 
-    expect(mockRequest.getRequestURI()).andReturn('')
+    expect(mockRequest.getRequestURI()).andReturn('').anyTimes()
     expect(mockPrincipal.getName()).andReturn('')
     expect(mockAuthorizor.checkRole(anyString(), anyString())).andReturn(false)
     expect(mockIdentity.getUserPrincipal()).andReturn(mockPrincipal).anyTimes()
@@ -137,7 +147,7 @@ class SuCxfAuthenticatorTest {
     mockStatic(SpocpRoleAuthorizor)
     expect(SpocpRoleAuthorizor.getInstance()).andReturn(mockAuthorizor)
 
-    expect(mockRequest.getRequestURI()).andReturn('')
+    expect(mockRequest.getRequestURI()).andReturn('').anyTimes()
     expect(mockPrincipal.getName()).andReturn('')
     expect(mockAuthorizor.checkRole(anyString(), anyString())).andReturn(true)
     expect(mockIdentity.getUserPrincipal()).andReturn(mockPrincipal).anyTimes()

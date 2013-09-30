@@ -84,8 +84,9 @@ public class SpocpRoleAuthorizor {
       String role = getRole(className);
       if (role != null && role.length() > 0) {
         authorized = doSpocpCall(uid.replaceAll("[/@].*$", ""), role);
+        logger.debug("SPOCP result for " + uid + " in role " + role + ": " + authorized);
       } else {
-        logger.info("No SPOCP Role authentication for: " + className + ". Call will be let through.");
+        logger.debug("No SPOCP Role authentication for: " + className + ". Call will be let through.");
         return true;
       }
     }
