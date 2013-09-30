@@ -34,7 +34,7 @@ package se.su.it.svc.security;
 import org.spocp.client.SPOCPConnection;
 import org.spocp.client.SPOCPConnectionFactoryImpl;
 import org.spocp.client.SPOCPResult;
-import se.su.it.svc.annotation.SuCxfSvcSpocpRole;
+import se.su.it.svc.annotations.SuCxfSvcSpocpRole;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;

@@ -10,7 +10,7 @@ import org.spocp.SPOCPTokenInputStream
 import org.spocp.client.SPOCPConnection
 import org.spocp.client.SPOCPConnectionFactoryImpl
 import org.spocp.client.SPOCPResult
-import se.su.it.svc.annotation.SuCxfSvcSpocpRole
+import se.su.it.svc.annotations.SuCxfSvcSpocpRole
 
 import static org.easymock.EasyMock.anyObject
 import static org.easymock.EasyMock.anyString
