@@ -71,6 +71,7 @@ public class SuCxfAuthenticator extends SpnegoAuthenticator {
 
     Authentication authentication = doValidateRequest(request, response, mandatory);
     HttpServletRequest httpRequest = (HttpServletRequest) request;
+    String infoMessage = "Authentication response to '" + httpRequest.getRequestURI() + "':";
 
     if (authentication instanceof UserAuthentication) {
       UserAuthentication userAuthentication = (UserAuthentication) authentication;
@@ -78,16 +79,26 @@ public class SuCxfAuthenticator extends SpnegoAuthenticator {
 
       if (identity != null && identity.getUserPrincipal() != null) {
         SpocpRoleAuthorizor authorizor = SpocpRoleAuthorizor.getInstance();
+        String principalName = identity.getUserPrincipal().getName();
 
-        if (! authorizor.checkRole(identity.getUserPrincipal().getName(), httpRequest.getRequestURI())) {
+        infoMessage += " Negotiate: OK, user: " + principalName;
+
+        if (authorizor.checkRole(principalName, httpRequest.getRequestURI())) {
+          infoMessage += ", SPOCP: OK";
+        } else {
           authentication = Authentication.UNAUTHENTICATED;
+          infoMessage += ", SPOCP: DENIED, " + authentication;
         }
       } else {
         authentication = Authentication.UNAUTHENTICATED;
+        infoMessage += " Negotiate: OK, user: UNKNOWN, " + authentication;
       }
+    } else {
+      infoMessage += " " + authentication;
     }
 
-    logger.info("Authentication response to " + httpRequest.getRequestURI() + ":" + authentication);
+
+    logger.info(infoMessage);
     return authentication;
   }
 
