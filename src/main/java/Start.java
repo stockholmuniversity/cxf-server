@@ -56,31 +56,32 @@ import java.util.*;
 
 public class Start {
   private static final org.apache.log4j.Logger logger = org.apache.log4j.Logger.getLogger(Start.class);
+
   public static void main(String[] args) {
     String logfile = System.getProperty("log.file");
-    if(logfile != null) {
-      ((org.apache.log4j.DailyRollingFileAppender)LogManager.getRootLogger().getAppender("A")).setFile(logfile);
-      ((org.apache.log4j.DailyRollingFileAppender)LogManager.getRootLogger().getAppender("A")).activateOptions();
+    if (logfile != null) {
+      ((org.apache.log4j.DailyRollingFileAppender) LogManager.getRootLogger().getAppender("A")).setFile(logfile);
+      ((org.apache.log4j.DailyRollingFileAppender) LogManager.getRootLogger().getAppender("A")).activateOptions();
     }
 
-    if(System.getProperty("DEBUG") != null) {
+    if (System.getProperty("DEBUG") != null) {
       LogManager.getRootLogger().setLevel(Level.DEBUG);
     }
     Properties properties = new Properties();
     // Begin Check if properties file is defined as define argument
     String definedConfigFileName = System.getProperty("config.properties");
-    if(definedConfigFileName != null) {
+    if (definedConfigFileName != null) {
       logger.info("The configuration variable config.properties was set to <" + definedConfigFileName.trim() + ">.\r\n Checking properties in file...");
       try {
-        File file=new File(definedConfigFileName.trim());
-        if(!file.exists()) {
+        File file = new File(definedConfigFileName.trim());
+        if (!file.exists()) {
           logger.error("<" + definedConfigFileName.trim() + "> the file was not found. Quitting....");
           System.exit(10);
         }
         FileInputStream is = new FileInputStream(definedConfigFileName.trim());
         properties.load(is);
         is.close();
-        if(!checkDefinedConfigFileProperties(properties)) {
+        if (!checkDefinedConfigFileProperties(properties)) {
           System.exit(10);
         }
       } catch (Exception e) {
@@ -131,7 +132,7 @@ public class Start {
       properties.put("ssl.keystore", "cxf-svc-server.keystore");
       properties.put("ssl.password", "changeit");
       //Spnego
-      properties.put("spnego.conf","/etc/spnego.conf");
+      properties.put("spnego.conf", "/etc/spnego.conf");
       properties.put("spnego.properties", "spnego.properties");
       properties.put("spnego.realm", "SU.SE");
       properties.put("spnego.kdc", "kerberos.su.se");
@@ -148,28 +149,28 @@ public class Start {
     }
     // End Check if properties file is defined as define argument
 
-    int httpPort        = Integer.parseInt(properties.getProperty("http.port").trim());
+    int httpPort = Integer.parseInt(properties.getProperty("http.port").trim());
     String jettyBindAddress = properties.getProperty("bind.address");
     // extracting the config properties for ssl setup
-    boolean sslEnabled  = Boolean.parseBoolean(properties.getProperty("ssl.enabled"));
-    String sslKeystore  = properties.getProperty("ssl.keystore");
-    String sslPassword  = properties.getProperty("ssl.password");
+    boolean sslEnabled = Boolean.parseBoolean(properties.getProperty("ssl.enabled"));
+    String sslKeystore = properties.getProperty("ssl.keystore");
+    String sslPassword = properties.getProperty("ssl.password");
 
     //extracting the config for the spnegp setup
-    String spnegoConfigFileName     = properties.getProperty("spnego.conf");
-    String spnegoRealm              = properties.getProperty("spnego.realm");
-    String spnegoKdc                = properties.getProperty("spnego.kdc");
+    String spnegoConfigFileName = properties.getProperty("spnego.conf");
+    String spnegoRealm = properties.getProperty("spnego.realm");
+    String spnegoKdc = properties.getProperty("spnego.kdc");
     String spnegoPropertiesFileName = properties.getProperty("spnego.properties");
 
     try {
 
       org.eclipse.jetty.server.Server server = new org.eclipse.jetty.server.Server();
 
-      if(sslEnabled) {
+      if (sslEnabled) {
         SslSocketConnector connector = new SslSocketConnector();
 
         connector.setPort(httpPort);
-        if(jettyBindAddress != null && jettyBindAddress.length() > 0) {
+        if (jettyBindAddress != null && jettyBindAddress.length() > 0) {
           connector.setHost(jettyBindAddress);
         }
         connector.setKeystore(sslKeystore);
@@ -179,7 +180,7 @@ public class Start {
       } else {
         SocketConnector connector = new SocketConnector();
         connector.setPort(httpPort);
-        if(jettyBindAddress != null && jettyBindAddress.length() > 0) {
+        if (jettyBindAddress != null && jettyBindAddress.length() > 0) {
           connector.setHost(jettyBindAddress);
         }
         server.setConnectors(new Connector[]{connector});
@@ -196,20 +197,20 @@ public class Start {
 
       // Add webapp to threads context classpath
       ClassLoader ctcl = Thread.currentThread().getContextClassLoader();
-      URLClassLoader urlcl = new URLClassLoader(new URL[]{ webbAppFp.toURI().toURL() }, ctcl);
+      URLClassLoader urlcl = new URLClassLoader(new URL[]{webbAppFp.toURI().toURL()}, ctcl);
       Thread.currentThread().setContextClassLoader(urlcl);
 
       FilterHandler fh = new FilterHandler(context.getTempDirectory().toString());
 
       HandlerList handlers = new HandlerList();
-      handlers.setHandlers(new Handler[] {fh, context, new DefaultHandler() });
+      handlers.setHandlers(new Handler[]{fh, context, new DefaultHandler()});
 
       server.setHandler(handlers);
 
       System.setProperty("java.security.krb5.realm", spnegoRealm);
-      System.setProperty("javax.security.auth.useSubjectCredsOnly","false");
+      System.setProperty("javax.security.auth.useSubjectCredsOnly", "false");
       System.setProperty("java.security.auth.login.config", "=file:" + spnegoConfigFileName);
-      System.setProperty("java.security.krb5.kdc",spnegoKdc);
+      System.setProperty("java.security.krb5.kdc", spnegoKdc);
 
       Properties spnegoProperties = new Properties();
       Resource resource = Resource.newResource(spnegoPropertiesFileName);
@@ -233,32 +234,68 @@ public class Start {
   private static boolean checkDefinedConfigFileProperties(Properties properties) {
     // Begin check for mandatory properties
     List<String> notFoundList = new ArrayList<String>();
-    if(properties.get("ldap.serverro") == null) {notFoundList.add("ldap.serverro");}
-    if(properties.get("ldap.serverrw") == null) {notFoundList.add("ldap.serverrw");}
-    if(properties.get("http.port") == null) {notFoundList.add("http.port");}
-    if(properties.get("ssl.enabled") == null) {notFoundList.add("ssl.enabled");}
-    if(properties.get("ssl.enabled") != null && Boolean.parseBoolean(properties.getProperty("ssl.enabled"))) {
-      if(properties.get("ssl.keystore") == null) {notFoundList.add("ssl.keystore");}
-      if(properties.get("ssl.password") == null) {notFoundList.add("ssl.password");}
+    if (properties.get("ldap.serverro") == null) {
+      notFoundList.add("ldap.serverro");
     }
-    if(properties.get("spnego.conf") == null) {notFoundList.add("spnego.conf");}
-    if(properties.get("spnego.properties") == null) {notFoundList.add("spnego.properties");}
-    if(properties.get("spnego.realm") == null) {notFoundList.add("spnego.realm");}
-    if(properties.get("spnego.kdc") == null) {notFoundList.add("spnego.kdc");}
-    if(properties.get("ehcache.maxElementsInMemory") == null) {notFoundList.add("ehcache.maxElementsInMemory");}
-    if(properties.get("ehcache.eternal") == null) {notFoundList.add("ehcache.eternal");}
-    if(properties.get("ehcache.timeToIdleSeconds") == null) {notFoundList.add("ehcache.timeToIdleSeconds");}
-    if(properties.get("ehcache.timeToLiveSeconds") == null) {notFoundList.add("ehcache.timeToLiveSeconds");}
-    if(properties.get("ehcache.overflowToDisk") == null) {notFoundList.add("ehcache.overflowToDisk");}
-    if(properties.get("ehcache.diskPersistent") == null) {notFoundList.add("ehcache.diskPersistent");}
-    if(properties.get("ehcache.diskExpiryThreadIntervalSeconds") == null) {notFoundList.add("ehcache.diskExpiryThreadIntervalSeconds");}
-    if(properties.get("ehcache.memoryStoreEvictionPolicy") == null) {notFoundList.add("ehcache.memoryStoreEvictionPolicy");}
+    if (properties.get("ldap.serverrw") == null) {
+      notFoundList.add("ldap.serverrw");
+    }
+    if (properties.get("http.port") == null) {
+      notFoundList.add("http.port");
+    }
+    if (properties.get("ssl.enabled") == null) {
+      notFoundList.add("ssl.enabled");
+    }
+    if (properties.get("ssl.enabled") != null && Boolean.parseBoolean(properties.getProperty("ssl.enabled"))) {
+      if (properties.get("ssl.keystore") == null) {
+        notFoundList.add("ssl.keystore");
+      }
+      if (properties.get("ssl.password") == null) {
+        notFoundList.add("ssl.password");
+      }
+    }
+    if (properties.get("spnego.conf") == null) {
+      notFoundList.add("spnego.conf");
+    }
+    if (properties.get("spnego.properties") == null) {
+      notFoundList.add("spnego.properties");
+    }
+    if (properties.get("spnego.realm") == null) {
+      notFoundList.add("spnego.realm");
+    }
+    if (properties.get("spnego.kdc") == null) {
+      notFoundList.add("spnego.kdc");
+    }
+    if (properties.get("ehcache.maxElementsInMemory") == null) {
+      notFoundList.add("ehcache.maxElementsInMemory");
+    }
+    if (properties.get("ehcache.eternal") == null) {
+      notFoundList.add("ehcache.eternal");
+    }
+    if (properties.get("ehcache.timeToIdleSeconds") == null) {
+      notFoundList.add("ehcache.timeToIdleSeconds");
+    }
+    if (properties.get("ehcache.timeToLiveSeconds") == null) {
+      notFoundList.add("ehcache.timeToLiveSeconds");
+    }
+    if (properties.get("ehcache.overflowToDisk") == null) {
+      notFoundList.add("ehcache.overflowToDisk");
+    }
+    if (properties.get("ehcache.diskPersistent") == null) {
+      notFoundList.add("ehcache.diskPersistent");
+    }
+    if (properties.get("ehcache.diskExpiryThreadIntervalSeconds") == null) {
+      notFoundList.add("ehcache.diskExpiryThreadIntervalSeconds");
+    }
+    if (properties.get("ehcache.memoryStoreEvictionPolicy") == null) {
+      notFoundList.add("ehcache.memoryStoreEvictionPolicy");
+    }
 
-    if(notFoundList.size() <= 0) {
+    if (notFoundList.size() <= 0) {
       return true;
     }
 
-    for(int i=0;i < notFoundList.size();i++) {
+    for (int i = 0; i < notFoundList.size(); i++) {
       logger.error("Property <" + notFoundList.get(i) + ">   ...not found");
     }
     // End check for mandatory properties
@@ -267,10 +304,10 @@ public class Start {
   }
 
   private static class MonitorThread extends Thread {
-    private static final String APP="se.su.it.svc";
-    private static final String JETTY="org.eclipse.jetty";
-    private static final String CXF="org.apache.cxf";
-    private static final String SPRING="org.springframework";
+    private static final String APP = "se.su.it.svc";
+    private static final String JETTY = "org.eclipse.jetty";
+    private static final String CXF = "org.apache.cxf";
+    private static final String SPRING = "org.springframework";
 
     private FileChannel fc;
     private MappedByteBuffer mem;
@@ -281,108 +318,151 @@ public class Start {
       try {
         fc = new RandomAccessFile("/tmp/cxf-server-tmp.txt", "rw").getChannel();
         mem = fc.map(FileChannel.MapMode.READ_WRITE, 0, 1);
-      } catch(Exception e) {
+      } catch (Exception e) {
       }
     }
+
     @Override
     public void run() {
       logger.info("Running monitor thread");
       try {
-        while(true){
+        while (true) {
           byte req = mem.get(0);
           Thread.sleep(2);
-          if(req != 0 ) {
-            mem.put(0, (byte)0);
+          if (req != 0) {
+            mem.put(0, (byte) 0);
             selectFunction(req);
             req = 0;
           }
         }
-      } catch(Exception e) {
+      } catch (Exception e) {
       }
     }
+
     private void selectFunction(byte b) {
-      switch(b) {
-        case 1  : LogManager.getRootLogger().setLevel(Level.ALL);
+      switch (b) {
+        case 1:
+          LogManager.getRootLogger().setLevel(Level.ALL);
           break;
-        case 2  : LogManager.getRootLogger().setLevel(Level.TRACE);
+        case 2:
+          LogManager.getRootLogger().setLevel(Level.TRACE);
           break;
-        case 3  : LogManager.getRootLogger().setLevel(Level.DEBUG);
+        case 3:
+          LogManager.getRootLogger().setLevel(Level.DEBUG);
           break;
-        case 4  : LogManager.getRootLogger().setLevel(Level.INFO);
+        case 4:
+          LogManager.getRootLogger().setLevel(Level.INFO);
           break;
-        case 5  : LogManager.getRootLogger().setLevel(Level.WARN);
+        case 5:
+          LogManager.getRootLogger().setLevel(Level.WARN);
           break;
-        case 6  : LogManager.getRootLogger().setLevel(Level.FATAL);
+        case 6:
+          LogManager.getRootLogger().setLevel(Level.FATAL);
           break;
-        case 7  : LogManager.getRootLogger().setLevel(Level.ERROR);
+        case 7:
+          LogManager.getRootLogger().setLevel(Level.ERROR);
           break;
-        case 8  : LogManager.getRootLogger().setLevel(Level.OFF);
+        case 8:
+          LogManager.getRootLogger().setLevel(Level.OFF);
           break;
-        case 9  : LogManager.getLogger(APP).setLevel(Level.ALL);
+        case 9:
+          LogManager.getLogger(APP).setLevel(Level.ALL);
           break;
-        case 10  : LogManager.getLogger(APP).setLevel(Level.TRACE);
+        case 10:
+          LogManager.getLogger(APP).setLevel(Level.TRACE);
           break;
-        case 11  : LogManager.getLogger(APP).setLevel(Level.DEBUG);
+        case 11:
+          LogManager.getLogger(APP).setLevel(Level.DEBUG);
           break;
-        case 12  : LogManager.getLogger(APP).setLevel(Level.INFO);
+        case 12:
+          LogManager.getLogger(APP).setLevel(Level.INFO);
           break;
-        case 13  : LogManager.getLogger(APP).setLevel(Level.WARN);
+        case 13:
+          LogManager.getLogger(APP).setLevel(Level.WARN);
           break;
-        case 14  : LogManager.getLogger(APP).setLevel(Level.FATAL);
+        case 14:
+          LogManager.getLogger(APP).setLevel(Level.FATAL);
           break;
-        case 15  : LogManager.getLogger(APP).setLevel(Level.ERROR);
+        case 15:
+          LogManager.getLogger(APP).setLevel(Level.ERROR);
           break;
-        case 16  : LogManager.getLogger(APP).setLevel(Level.OFF);
+        case 16:
+          LogManager.getLogger(APP).setLevel(Level.OFF);
           break;
-        case 17  : LogManager.getLogger(JETTY).setLevel(Level.ALL);
+        case 17:
+          LogManager.getLogger(JETTY).setLevel(Level.ALL);
           break;
-        case 18  : LogManager.getLogger(JETTY).setLevel(Level.TRACE);
+        case 18:
+          LogManager.getLogger(JETTY).setLevel(Level.TRACE);
           break;
-        case 19  : LogManager.getLogger(JETTY).setLevel(Level.DEBUG);
+        case 19:
+          LogManager.getLogger(JETTY).setLevel(Level.DEBUG);
           break;
-        case 20  : LogManager.getLogger(JETTY).setLevel(Level.INFO);
+        case 20:
+          LogManager.getLogger(JETTY).setLevel(Level.INFO);
           break;
-        case 21  : LogManager.getLogger(JETTY).setLevel(Level.WARN);
+        case 21:
+          LogManager.getLogger(JETTY).setLevel(Level.WARN);
           break;
-        case 22  : LogManager.getLogger(JETTY).setLevel(Level.FATAL);
+        case 22:
+          LogManager.getLogger(JETTY).setLevel(Level.FATAL);
           break;
-        case 23  : LogManager.getLogger(JETTY).setLevel(Level.ERROR);
+        case 23:
+          LogManager.getLogger(JETTY).setLevel(Level.ERROR);
           break;
-        case 24  : LogManager.getLogger(JETTY).setLevel(Level.OFF);
+        case 24:
+          LogManager.getLogger(JETTY).setLevel(Level.OFF);
           break;
-        case 25  : LogManager.getLogger(CXF).setLevel(Level.ALL);
+        case 25:
+          LogManager.getLogger(CXF).setLevel(Level.ALL);
           break;
-        case 26  : LogManager.getLogger(CXF).setLevel(Level.TRACE);
+        case 26:
+          LogManager.getLogger(CXF).setLevel(Level.TRACE);
           break;
-        case 27  : LogManager.getLogger(CXF).setLevel(Level.DEBUG);
+        case 27:
+          LogManager.getLogger(CXF).setLevel(Level.DEBUG);
           break;
-        case 28  : LogManager.getLogger(CXF).setLevel(Level.INFO);
+        case 28:
+          LogManager.getLogger(CXF).setLevel(Level.INFO);
           break;
-        case 29  : LogManager.getLogger(CXF).setLevel(Level.WARN);
+        case 29:
+          LogManager.getLogger(CXF).setLevel(Level.WARN);
           break;
-        case 30  : LogManager.getLogger(CXF).setLevel(Level.FATAL);
+        case 30:
+          LogManager.getLogger(CXF).setLevel(Level.FATAL);
           break;
-        case 31  : LogManager.getLogger(CXF).setLevel(Level.ERROR);
+        case 31:
+          LogManager.getLogger(CXF).setLevel(Level.ERROR);
           break;
-        case 32  : LogManager.getLogger(CXF).setLevel(Level.OFF);
+        case 32:
+          LogManager.getLogger(CXF).setLevel(Level.OFF);
           break;
-        case 33  : LogManager.getLogger(SPRING).setLevel(Level.ALL);
+        case 33:
+          LogManager.getLogger(SPRING).setLevel(Level.ALL);
           break;
-        case 34  : LogManager.getLogger(SPRING).setLevel(Level.TRACE);
+        case 34:
+          LogManager.getLogger(SPRING).setLevel(Level.TRACE);
           break;
-        case 35  : LogManager.getLogger(SPRING).setLevel(Level.DEBUG);
+        case 35:
+          LogManager.getLogger(SPRING).setLevel(Level.DEBUG);
           break;
-        case 36  : LogManager.getLogger(SPRING).setLevel(Level.INFO);
+        case 36:
+          LogManager.getLogger(SPRING).setLevel(Level.INFO);
           break;
-        case 37  : LogManager.getLogger(SPRING).setLevel(Level.WARN);
+        case 37:
+          LogManager.getLogger(SPRING).setLevel(Level.WARN);
           break;
-        case 38  : LogManager.getLogger(SPRING).setLevel(Level.FATAL);
+        case 38:
+          LogManager.getLogger(SPRING).setLevel(Level.FATAL);
           break;
-        case 39  : LogManager.getLogger(SPRING).setLevel(Level.ERROR);
+        case 39:
+          LogManager.getLogger(SPRING).setLevel(Level.ERROR);
           break;
-        case 40  : LogManager.getLogger(SPRING).setLevel(Level.OFF);
+        case 40:
+          LogManager.getLogger(SPRING).setLevel(Level.OFF);
           break;
-        default : break;
+        default:
+          break;
       }
     }
   }
