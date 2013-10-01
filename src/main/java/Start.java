@@ -57,8 +57,22 @@ import java.util.*;
 public class Start {
   private static final org.apache.log4j.Logger logger = org.apache.log4j.Logger.getLogger(Start.class);
 
+  public static final String DEFAULT_LOG_FILE_NAME_PROPERTY_KEY = "log.file";
+  public static final String DEFAULT_CONFIG_FILE_NAME_PROPERTY_KEY = "config.properties";
+  public static final String PORT_PROPERTY_KEY = "http.port";
+  public static final String BIND_ADDRESS_PROPERTY_KEY = "bind.address";
+  public static final String SSL_ENABLED_PROPERTY_KEY = "ssl.enabled";
+  public static final String SSL_KEYSTORE_PROPERTY_KEY = "ssl.keystore";
+  public static final String SSL_PASSWORD_PROPERTY_KEY = "ssl.password";
+  public static final String SPNEGO_CONFIG_FILE_PROPERTY_KEY = "spnego.conf";
+  public static final String SPNEGO_REALM_PROPERTY_KEY = "spnego.realm";
+  public static final String SPNEGO_KDC_PROPERTY_KEY = "spnego.kdc";
+  public static final String SPNEGO_PROPERTIES_PROPERTY_KEY = "spnego.properties";
+
+
   public static void main(String[] args) {
-    String logfile = System.getProperty("log.file");
+    String logfile = System.getProperty(DEFAULT_LOG_FILE_NAME_PROPERTY_KEY);
+
     if (logfile != null) {
       ((org.apache.log4j.DailyRollingFileAppender) LogManager.getRootLogger().getAppender("A")).setFile(logfile);
       ((org.apache.log4j.DailyRollingFileAppender) LogManager.getRootLogger().getAppender("A")).activateOptions();
@@ -67,100 +81,23 @@ public class Start {
     if (System.getProperty("DEBUG") != null) {
       LogManager.getRootLogger().setLevel(Level.DEBUG);
     }
-    Properties properties = new Properties();
+
     // Begin Check if properties file is defined as define argument
-    String definedConfigFileName = System.getProperty("config.properties");
-    if (definedConfigFileName != null) {
-      logger.info("The configuration variable config.properties was set to <" + definedConfigFileName.trim() + ">.\r\n Checking properties in file...");
-      try {
-        File file = new File(definedConfigFileName.trim());
-        if (!file.exists()) {
-          logger.error("<" + definedConfigFileName.trim() + "> the file was not found. Quitting....");
-          System.exit(10);
-        }
-        FileInputStream is = new FileInputStream(definedConfigFileName.trim());
-        properties.load(is);
-        is.close();
-        if (!checkDefinedConfigFileProperties(properties)) {
-          System.exit(10);
-        }
-      } catch (Exception e) {
-        logger.error("<" + definedConfigFileName.trim() + ">, got an exception <" + e.getMessage() + "> trying to access file. Quitting....");
-        System.exit(10);
-      }
-    } else {
-      // Begin Default properties
-      logger.warn("No config.properties file set in system environment, using defaults.");
+    Properties properties = loadProperties();
 
-      logger.warn("database.url=jdbc:mysql://localhost/gormtest");
-      logger.warn("database.driver=com.mysql.jdbc.Driver");
-      logger.warn("database.user=gormtest");
-      logger.warn("database.password=gormtest");
-      //Ldap
-      logger.warn("ldap.serverro=ldap://ldap-test.su.se");
-      logger.warn("ldap.serverrw=ldap://sukat-test-ldaprw02.it.su.se");
-      //Ssl
-      logger.warn("http.port=443");
-      logger.warn("ssl.enabled=true");
-      logger.warn("ssl.keystore=cxf-svc-server.keystore");
-      logger.warn("ssl.password=changeit");
-      //Spnego
-      logger.warn("spnego.conf=/etc/spnego.conf");
-      logger.warn("spnego.properties=spnego.properties");
-      logger.warn("spnego.realm=SU.SE");
-      logger.warn("spnego.kdc=kerberos.su.se");
-      //Ehcache
-      logger.warn("ehcache.maxElementsInMemory=10000");
-      logger.warn("ehcache.eternal=false");
-      logger.warn("ehcache.timeToIdleSeconds=120");
-      logger.warn("ehcache.timeToLiveSeconds=600");
-      logger.warn("ehcache.overflowToDisk=false");
-      logger.warn("ehcache.diskPersistent=false");
-      logger.warn("ehcache.diskExpiryThreadIntervalSeconds=120");
-      logger.warn("ehcache.memoryStoreEvictionPolicy=LRU");
-
-      properties.put("database.url", "jdbc:mysql://localhost/gormtest");
-      properties.put("database.driver", "com.mysql.jdbc.Driver");
-      properties.put("database.user", "gormtest");
-      properties.put("database.password", "gormtest");
-      //Ldap
-      properties.put("ldap.serverro", "ldap://ldap-test.su.se");
-      properties.put("ldap.serverrw", "ldap://sukat-test-ldaprw02.it.su.se");
-      //Ssl
-      properties.put("http.port", "443");
-      properties.put("ssl.enabled", "true");
-      properties.put("ssl.keystore", "cxf-svc-server.keystore");
-      properties.put("ssl.password", "changeit");
-      //Spnego
-      properties.put("spnego.conf", "/etc/spnego.conf");
-      properties.put("spnego.properties", "spnego.properties");
-      properties.put("spnego.realm", "SU.SE");
-      properties.put("spnego.kdc", "kerberos.su.se");
-      //Ehcache
-      properties.put("ehcache.maxElementsInMemory", "10000");
-      properties.put("ehcache.eternal", "false");
-      properties.put("ehcache.timeToIdleSeconds", "120");
-      properties.put("ehcache.timeToLiveSeconds", "600");
-      properties.put("ehcache.overflowToDisk", "false");
-      properties.put("ehcache.diskPersistent", "false");
-      properties.put("ehcache.diskExpiryThreadIntervalSeconds", "120");
-      properties.put("ehcache.memoryStoreEvictionPolicy", "LRU");
-      // End Default properties
-    }
     // End Check if properties file is defined as define argument
-
-    int httpPort = Integer.parseInt(properties.getProperty("http.port").trim());
-    String jettyBindAddress = properties.getProperty("bind.address");
+    int httpPort = Integer.parseInt(properties.getProperty(PORT_PROPERTY_KEY).trim());
+    String jettyBindAddress = properties.getProperty(BIND_ADDRESS_PROPERTY_KEY);
     // extracting the config properties for ssl setup
-    boolean sslEnabled = Boolean.parseBoolean(properties.getProperty("ssl.enabled"));
-    String sslKeystore = properties.getProperty("ssl.keystore");
-    String sslPassword = properties.getProperty("ssl.password");
+    boolean sslEnabled = Boolean.parseBoolean(properties.getProperty(SSL_ENABLED_PROPERTY_KEY));
+    String sslKeystore = properties.getProperty(SSL_KEYSTORE_PROPERTY_KEY);
+    String sslPassword = properties.getProperty(SSL_PASSWORD_PROPERTY_KEY);
 
     //extracting the config for the spnegp setup
-    String spnegoConfigFileName = properties.getProperty("spnego.conf");
-    String spnegoRealm = properties.getProperty("spnego.realm");
-    String spnegoKdc = properties.getProperty("spnego.kdc");
-    String spnegoPropertiesFileName = properties.getProperty("spnego.properties");
+    String spnegoConfigFileName = properties.getProperty(SPNEGO_CONFIG_FILE_PROPERTY_KEY);
+    String spnegoRealm = properties.getProperty(SPNEGO_REALM_PROPERTY_KEY);
+    String spnegoKdc = properties.getProperty(SPNEGO_KDC_PROPERTY_KEY);
+    String spnegoPropertiesFileName = properties.getProperty(SPNEGO_PROPERTIES_PROPERTY_KEY);
 
     try {
 
@@ -227,8 +164,33 @@ public class Start {
       server.join();
 
     } catch (Exception ex) {
-      ex.printStackTrace();
+      logger.error("Server startup failed.", ex);
     }
+  }
+
+  private static Properties loadProperties() {
+    Properties properties = new Properties();
+    String definedConfigFileName = System.getProperty(DEFAULT_CONFIG_FILE_NAME_PROPERTY_KEY);
+    if (definedConfigFileName != null) {
+      logger.info("The configuration variable config.properties was set to <" + definedConfigFileName.trim() + ">.\r\n Checking properties in file...");
+      try {
+        File file = new File(definedConfigFileName.trim());
+        if (!file.exists()) {
+          logger.error("<" + definedConfigFileName.trim() + "> the file was not found. Quitting....");
+          System.exit(10);
+        }
+        FileInputStream is = new FileInputStream(definedConfigFileName.trim());
+        properties.load(is);
+        is.close();
+        if (!checkDefinedConfigFileProperties(properties)) {
+          System.exit(10);
+        }
+      } catch (Exception e) {
+        logger.error("<" + definedConfigFileName.trim() + ">, got an exception <" + e.getMessage() + "> trying to access file. Quitting....");
+        System.exit(10);
+      }
+    }
+    return properties;
   }
 
   private static boolean checkDefinedConfigFileProperties(Properties properties) {
