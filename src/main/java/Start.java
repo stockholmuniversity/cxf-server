@@ -59,18 +59,32 @@ public class Start {
 
   public static final String DEFAULT_LOG_FILE_NAME_PROPERTY_KEY = "log.file";
   public static final String DEFAULT_CONFIG_FILE_NAME_PROPERTY_KEY = "config.properties";
-  public static final String PORT_PROPERTY_KEY = "http.port";
-  public static final String BIND_ADDRESS_PROPERTY_KEY = "bind.address";
-  public static final String SSL_ENABLED_PROPERTY_KEY = "ssl.enabled";
-  public static final String SSL_KEYSTORE_PROPERTY_KEY = "ssl.keystore";
-  public static final String SSL_PASSWORD_PROPERTY_KEY = "ssl.password";
-  public static final String SPNEGO_CONFIG_FILE_PROPERTY_KEY = "spnego.conf";
-  public static final String SPNEGO_REALM_PROPERTY_KEY = "spnego.realm";
-  public static final String SPNEGO_KDC_PROPERTY_KEY = "spnego.kdc";
-  public static final String SPNEGO_PROPERTIES_PROPERTY_KEY = "spnego.properties";
+
+  public static final String DEFAULT_SERVER_PREFIX = "cxf-server.";
+
+  public static final String PORT_PROPERTY_KEY                = DEFAULT_SERVER_PREFIX + "http.port";
+  public static final String BIND_ADDRESS_PROPERTY_KEY        = DEFAULT_SERVER_PREFIX + "bind.address";
+  public static final String SSL_ENABLED_PROPERTY_KEY         = DEFAULT_SERVER_PREFIX + "ssl.enabled";
+  public static final String SSL_KEYSTORE_PROPERTY_KEY        = DEFAULT_SERVER_PREFIX + "ssl.keystore";
+  public static final String SSL_PASSWORD_PROPERTY_KEY        = DEFAULT_SERVER_PREFIX + "ssl.password";
+  public static final String SPNEGO_CONFIG_FILE_PROPERTY_KEY  = DEFAULT_SERVER_PREFIX + "spnego.conf";
+  public static final String SPNEGO_REALM_PROPERTY_KEY        = DEFAULT_SERVER_PREFIX + "spnego.realm";
+  public static final String SPNEGO_KDC_PROPERTY_KEY          = DEFAULT_SERVER_PREFIX + "spnego.kdc";
+  public static final String SPNEGO_PROPERTIES_PROPERTY_KEY   = DEFAULT_SERVER_PREFIX + "spnego.properties";
+
+  private static final ArrayList<String> mandatoryProperties = new ArrayList<String>() {{
+    add(PORT_PROPERTY_KEY);
+    add(BIND_ADDRESS_PROPERTY_KEY);
+    add(SSL_ENABLED_PROPERTY_KEY);
+    add(SPNEGO_CONFIG_FILE_PROPERTY_KEY);
+    add(SPNEGO_REALM_PROPERTY_KEY);
+    add(SPNEGO_KDC_PROPERTY_KEY);
+    add(SPNEGO_PROPERTIES_PROPERTY_KEY);
+  }};
 
 
   public static void main(String[] args) {
+    // TODO: Handle config file as an arg?
     String logfile = System.getProperty(DEFAULT_LOG_FILE_NAME_PROPERTY_KEY);
 
     if (logfile != null) {
@@ -171,95 +185,66 @@ public class Start {
   private static Properties loadProperties() {
     Properties properties = new Properties();
     String definedConfigFileName = System.getProperty(DEFAULT_CONFIG_FILE_NAME_PROPERTY_KEY);
-    if (definedConfigFileName != null) {
-      logger.info("The configuration variable config.properties was set to <" + definedConfigFileName.trim() + ">.\r\n Checking properties in file...");
-      try {
-        File file = new File(definedConfigFileName.trim());
-        if (!file.exists()) {
-          logger.error("<" + definedConfigFileName.trim() + "> the file was not found. Quitting....");
-          System.exit(10);
-        }
-        FileInputStream is = new FileInputStream(definedConfigFileName.trim());
-        properties.load(is);
-        is.close();
-        if (!checkDefinedConfigFileProperties(properties)) {
-          System.exit(10);
-        }
-      } catch (Exception e) {
-        logger.error("<" + definedConfigFileName.trim() + ">, got an exception <" + e.getMessage() + "> trying to access file. Quitting....");
+
+    logger.info("The configuration variable config.properties was set to <" + definedConfigFileName.trim() + ">.\r\n Checking properties in file...");
+
+    try {
+      File file = new File(definedConfigFileName.trim());
+      if (!file.exists()) {
+        logger.error("<" + definedConfigFileName.trim() + "> the file was not found. Quitting....");
         System.exit(10);
       }
+      FileInputStream is = new FileInputStream(definedConfigFileName.trim());
+      properties.load(is);
+      is.close();
+      if (!checkDefinedConfigFileProperties(properties)) {
+        System.exit(10);
+      }
+    } catch (Exception e) {
+      logger.error("<" + definedConfigFileName.trim() + ">, got an exception trying to access file. Quitting....", e);
+      System.exit(10);
     }
+
+
+    logger.info("Listing properties");
+    for (Object property : properties.keySet()) {
+      logger.info("Property " + property + " holds value => " + properties.get(property));
+    }
+
     return properties;
   }
 
   private static boolean checkDefinedConfigFileProperties(Properties properties) {
     // Begin check for mandatory properties
+
     List<String> notFoundList = new ArrayList<String>();
-    if (properties.get("ldap.serverro") == null) {
-      notFoundList.add("ldap.serverro");
-    }
-    if (properties.get("ldap.serverrw") == null) {
-      notFoundList.add("ldap.serverrw");
-    }
-    if (properties.get("http.port") == null) {
-      notFoundList.add("http.port");
-    }
-    if (properties.get("ssl.enabled") == null) {
-      notFoundList.add("ssl.enabled");
-    }
-    if (properties.get("ssl.enabled") != null && Boolean.parseBoolean(properties.getProperty("ssl.enabled"))) {
-      if (properties.get("ssl.keystore") == null) {
-        notFoundList.add("ssl.keystore");
+
+    for (String mandatoryProperty : mandatoryProperties) {
+      if (mandatoryProperty.equals(SSL_ENABLED_PROPERTY_KEY)) {
+        boolean useSSL = Boolean.parseBoolean(properties.getProperty(SSL_ENABLED_PROPERTY_KEY));
+        if (useSSL) {
+          if (properties.get(SSL_KEYSTORE_PROPERTY_KEY) == null) {
+            notFoundList.add(SSL_KEYSTORE_PROPERTY_KEY);
+          }
+          if (properties.get(SSL_PASSWORD_PROPERTY_KEY) == null) {
+            notFoundList.add(SSL_PASSWORD_PROPERTY_KEY);
+          }
+        }
+      } else {
+        if (properties.get(mandatoryProperty) == null) {
+          notFoundList.add(mandatoryProperty);
+        }
       }
-      if (properties.get("ssl.password") == null) {
-        notFoundList.add("ssl.password");
-      }
-    }
-    if (properties.get("spnego.conf") == null) {
-      notFoundList.add("spnego.conf");
-    }
-    if (properties.get("spnego.properties") == null) {
-      notFoundList.add("spnego.properties");
-    }
-    if (properties.get("spnego.realm") == null) {
-      notFoundList.add("spnego.realm");
-    }
-    if (properties.get("spnego.kdc") == null) {
-      notFoundList.add("spnego.kdc");
-    }
-    if (properties.get("ehcache.maxElementsInMemory") == null) {
-      notFoundList.add("ehcache.maxElementsInMemory");
-    }
-    if (properties.get("ehcache.eternal") == null) {
-      notFoundList.add("ehcache.eternal");
-    }
-    if (properties.get("ehcache.timeToIdleSeconds") == null) {
-      notFoundList.add("ehcache.timeToIdleSeconds");
-    }
-    if (properties.get("ehcache.timeToLiveSeconds") == null) {
-      notFoundList.add("ehcache.timeToLiveSeconds");
-    }
-    if (properties.get("ehcache.overflowToDisk") == null) {
-      notFoundList.add("ehcache.overflowToDisk");
-    }
-    if (properties.get("ehcache.diskPersistent") == null) {
-      notFoundList.add("ehcache.diskPersistent");
-    }
-    if (properties.get("ehcache.diskExpiryThreadIntervalSeconds") == null) {
-      notFoundList.add("ehcache.diskExpiryThreadIntervalSeconds");
-    }
-    if (properties.get("ehcache.memoryStoreEvictionPolicy") == null) {
-      notFoundList.add("ehcache.memoryStoreEvictionPolicy");
     }
 
     if (notFoundList.size() <= 0) {
       return true;
     }
 
-    for (int i = 0; i < notFoundList.size(); i++) {
-      logger.error("Property <" + notFoundList.get(i) + ">   ...not found");
+    for (String notFound : notFoundList) {
+      logger.error("Property <" + notFound + ">   ...not found");
     }
+
     // End check for mandatory properties
     logger.error("Quitting because mandatory properties was missing...");
     return false;  //To change body of created methods use File | Settings | File Templates.
