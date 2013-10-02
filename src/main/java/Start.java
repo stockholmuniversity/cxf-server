@@ -205,18 +205,16 @@ public class Start {
       System.exit(10);
     }
 
-
-    logger.info("Listing properties");
+    logger.info("\n");
+    logger.info("*** Properties ***");
     for (Object property : properties.keySet()) {
-      logger.info("Property " + property + " holds value => " + properties.get(property));
+      logger.info(property + " => " + properties.get(property));
     }
 
     return properties;
   }
 
   private static boolean checkDefinedConfigFileProperties(Properties properties) {
-    // Begin check for mandatory properties
-
     List<String> notFoundList = new ArrayList<String>();
 
     for (String mandatoryProperty : mandatoryProperties) {
