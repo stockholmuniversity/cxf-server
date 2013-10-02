@@ -33,9 +33,11 @@ import org.apache.log4j.Level;
 import org.apache.log4j.LogManager;
 import org.eclipse.jetty.server.Connector;
 import org.eclipse.jetty.server.Handler;
+import org.eclipse.jetty.server.NCSARequestLog;
 import org.eclipse.jetty.server.bio.SocketConnector;
 import org.eclipse.jetty.server.handler.DefaultHandler;
 import org.eclipse.jetty.server.handler.HandlerList;
+import org.eclipse.jetty.server.handler.RequestLogHandler;
 import org.eclipse.jetty.server.ssl.SslSocketConnector;
 import org.eclipse.jetty.util.resource.Resource;
 import org.eclipse.jetty.webapp.WebAppContext;
@@ -199,12 +201,20 @@ public class Start {
       URLClassLoader urlcl = new URLClassLoader(new URL[]{ webbAppFp.toURI().toURL() }, ctcl);
       Thread.currentThread().setContextClassLoader(urlcl);
 
+      RequestLogHandler requestLogHandler = new RequestLogHandler();
       FilterHandler fh = new FilterHandler(context.getTempDirectory().toString());
 
       HandlerList handlers = new HandlerList();
-      handlers.setHandlers(new Handler[] {fh, context, new DefaultHandler() });
+      handlers.setHandlers(new Handler[] {requestLogHandler, fh, context, new DefaultHandler() });
 
       server.setHandler(handlers);
+
+      // Setup request logging
+      NCSARequestLog requestLog = new NCSARequestLog(logfile);
+      requestLog.setAppend(true);
+      requestLog.setExtended(false);
+      requestLog.setLogTimeZone("CET");
+      requestLogHandler.setRequestLog(requestLog);
 
       System.setProperty("java.security.krb5.realm", spnegoRealm);
       System.setProperty("javax.security.auth.useSubjectCredsOnly","false");
