@@ -45,6 +45,13 @@ public class SuCxfAuthenticator extends SpnegoAuthenticator {
 
   private static final org.apache.log4j.Logger logger = org.apache.log4j.Logger.getLogger(SuCxfAuthenticator.class);
 
+  private boolean spocpEnabled = false;
+
+  public void setSpocpEnabled(boolean spocpEnabled) {
+    logger.info("SuCxfAuthenticator: Spocp is enabled: " + spocpEnabled);
+    this.spocpEnabled = spocpEnabled;
+  }
+
   /**
    * Validate the request.
    * Any wsdl-query will get through.
@@ -73,16 +80,16 @@ public class SuCxfAuthenticator extends SpnegoAuthenticator {
     HttpServletRequest httpRequest = (HttpServletRequest) request;
     String infoMessage = "Authentication response to '" + httpRequest.getRequestURI() + "':";
 
-    if (authentication instanceof UserAuthentication) {
+    if (spocpEnabled && authentication instanceof UserAuthentication) {
       UserAuthentication userAuthentication = (UserAuthentication) authentication;
       UserIdentity identity = userAuthentication.getUserIdentity();
 
       if (identity != null && identity.getUserPrincipal() != null) {
-        SpocpRoleAuthorizor authorizor = SpocpRoleAuthorizor.getInstance();
-        String principalName = identity.getUserPrincipal().getName();
 
+        String principalName = identity.getUserPrincipal().getName();
         infoMessage += " Negotiate: OK, user: " + principalName;
 
+        SpocpRoleAuthorizor authorizor = SpocpRoleAuthorizor.getInstance();
         if (authorizor.checkRole(principalName, httpRequest.getRequestURI())) {
           infoMessage += ", SPOCP: OK";
         } else {

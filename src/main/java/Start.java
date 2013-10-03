@@ -31,6 +31,7 @@
 
 import org.apache.log4j.Level;
 import org.apache.log4j.LogManager;
+import org.eclipse.jetty.security.Authenticator;
 import org.eclipse.jetty.server.Connector;
 import org.eclipse.jetty.server.Handler;
 import org.eclipse.jetty.server.NCSARequestLog;
@@ -191,7 +192,10 @@ public class Start {
 
       SpnegoAndKrb5LoginService loginService = new SpnegoAndKrb5LoginService(spnegoRealm, spnegoProperties.getProperty("targetName"));
       context.getSecurityHandler().setLoginService(loginService);
-      context.getSecurityHandler().setAuthenticator(new SuCxfAuthenticator());
+
+      SuCxfAuthenticator authenticator = new SuCxfAuthenticator();
+      authenticator.setSpocpEnabled(spocpEnabled);
+      context.getSecurityHandler().setAuthenticator(authenticator);
 
       Thread monitor = new MonitorThread();
       monitor.start();
