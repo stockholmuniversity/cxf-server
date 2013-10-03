@@ -4,6 +4,7 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.powermock.core.classloader.annotations.PrepareForTest
 import org.powermock.modules.junit4.PowerMockRunner
+import org.powermock.reflect.Whitebox
 import org.spocp.SPOCPException
 import org.spocp.SPOCPToken
 import org.spocp.SPOCPTokenInputStream
@@ -38,11 +39,36 @@ class SpocpRoleAuthorizorTest {
    */
   class DummyServiceWithoutRole {}
 
+  @Test(expected=IllegalArgumentException.class)
+  void "initialize: When missing server argument"() {
+    SpocpRoleAuthorizor.initialize(null, "1");
+  }
+
+  @Test(expected=IllegalArgumentException.class)
+  void "initialize: When missing port argument"() {
+    SpocpRoleAuthorizor.initialize("server", null);
+  }
+
+  @Test(expected=NumberFormatException.class)
+  void "initialize: When given an invalid port argument"() {
+    SpocpRoleAuthorizor.initialize("server", "server");
+  }
+
+  @Test
+  void "initialize: Test initializor"() {
+    SpocpRoleAuthorizor.initialize("server", "1")
+    assert Whitebox.getInternalState(SpocpRoleAuthorizor, "initialized") == true
+    SPOCPConnectionFactoryImpl spiml = Whitebox.getInternalState(SpocpRoleAuthorizor.instance, "spocpConnectionFactory")
+    assert spiml.server == "server"
+    assert spiml.port == 1
+  }
+
+
   @Test
   void "getInstance returns the same instance"() {
+
     def first = SpocpRoleAuthorizor.instance
     def second = SpocpRoleAuthorizor.instance
-
     assert first == second
   }
 

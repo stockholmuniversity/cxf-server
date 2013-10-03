@@ -31,6 +31,7 @@
 
 import org.apache.log4j.Level;
 import org.apache.log4j.LogManager;
+import org.eclipse.jetty.security.Authenticator;
 import org.eclipse.jetty.server.Connector;
 import org.eclipse.jetty.server.Handler;
 import org.eclipse.jetty.server.NCSARequestLog;
@@ -43,6 +44,7 @@ import org.eclipse.jetty.util.resource.Resource;
 import org.eclipse.jetty.webapp.WebAppContext;
 import se.su.it.svc.filter.FilterHandler;
 import se.su.it.svc.security.SpnegoAndKrb5LoginService;
+import se.su.it.svc.security.SpocpRoleAuthorizor;
 import se.su.it.svc.security.SuCxfAuthenticator;
 
 import java.io.File;
@@ -74,6 +76,10 @@ public class Start {
   public static final String SPNEGO_KDC_PROPERTY_KEY          = DEFAULT_SERVER_PREFIX + "spnego.kdc";
   public static final String SPNEGO_PROPERTIES_PROPERTY_KEY   = DEFAULT_SERVER_PREFIX + "spnego.properties";
 
+  public static final String SPOCP_ENABLED_PROPERTY_KEY       = DEFAULT_SERVER_PREFIX + "spocp.enabled";
+  public static final String SPOCP_SERVER_PROPERTY_KEY        = DEFAULT_SERVER_PREFIX + "spocp.server";
+  public static final String SPOCP_PORT_PROPERTY_KEY          = DEFAULT_SERVER_PREFIX + "spocp.port";
+
   private static final ArrayList<String> mandatoryProperties = new ArrayList<String>() {{
     add(PORT_PROPERTY_KEY);
     add(BIND_ADDRESS_PROPERTY_KEY);
@@ -82,8 +88,19 @@ public class Start {
     add(SPNEGO_REALM_PROPERTY_KEY);
     add(SPNEGO_KDC_PROPERTY_KEY);
     add(SPNEGO_PROPERTIES_PROPERTY_KEY);
+    add(SPOCP_ENABLED_PROPERTY_KEY);
   }};
 
+  private static final Map<String, List<String>> mandatoryDependencies = new HashMap<String, List<String>>() {{
+    put(SSL_ENABLED_PROPERTY_KEY, new LinkedList<String>() {{
+      add(SSL_KEYSTORE_PROPERTY_KEY);
+      add(SSL_PASSWORD_PROPERTY_KEY);
+    }});
+    put(SPOCP_ENABLED_PROPERTY_KEY, new LinkedList<String>() {{
+      add(SPOCP_SERVER_PROPERTY_KEY);
+      add(SPOCP_PORT_PROPERTY_KEY);
+    }});
+  }};
 
   public static void main(String[] args) {
     // TODO: Handle config file as an arg?
@@ -100,6 +117,13 @@ public class Start {
 
     // Begin Check if properties file is defined as define argument
     Properties properties = loadProperties();
+
+    boolean spocpEnabled = Boolean.parseBoolean(properties.getProperty(SPOCP_ENABLED_PROPERTY_KEY));
+
+    if (spocpEnabled) {
+      SpocpRoleAuthorizor.initialize(properties.getProperty(SPOCP_SERVER_PROPERTY_KEY),
+          properties.getProperty(SPOCP_PORT_PROPERTY_KEY));
+    }
 
     // End Check if properties file is defined as define argument
     int httpPort = Integer.parseInt(properties.getProperty(PORT_PROPERTY_KEY).trim());
@@ -179,7 +203,10 @@ public class Start {
 
       SpnegoAndKrb5LoginService loginService = new SpnegoAndKrb5LoginService(spnegoRealm, spnegoProperties.getProperty("targetName"));
       context.getSecurityHandler().setLoginService(loginService);
-      context.getSecurityHandler().setAuthenticator(new SuCxfAuthenticator());
+
+      SuCxfAuthenticator authenticator = new SuCxfAuthenticator();
+      authenticator.setSpocpEnabled(spocpEnabled);
+      context.getSecurityHandler().setAuthenticator(authenticator);
 
       Thread monitor = new MonitorThread();
       monitor.start();
@@ -228,14 +255,24 @@ public class Start {
     List<String> notFoundList = new ArrayList<String>();
 
     for (String mandatoryProperty : mandatoryProperties) {
-      if (mandatoryProperty.equals(SSL_ENABLED_PROPERTY_KEY)) {
-        boolean useSSL = Boolean.parseBoolean(properties.getProperty(SSL_ENABLED_PROPERTY_KEY));
-        if (useSSL) {
-          if (properties.get(SSL_KEYSTORE_PROPERTY_KEY) == null) {
-            notFoundList.add(SSL_KEYSTORE_PROPERTY_KEY);
-          }
-          if (properties.get(SSL_PASSWORD_PROPERTY_KEY) == null) {
-            notFoundList.add(SSL_PASSWORD_PROPERTY_KEY);
+      if (mandatoryDependencies.containsKey(mandatoryProperty)) {
+
+        /** See if the property is actually in the config file. */
+        if (properties.getProperty(mandatoryProperty) == null) {
+          notFoundList.add(mandatoryProperty);
+          continue;
+        }
+
+        /** If the property is set we check if the feature is enabled */
+        boolean functionEnabled = Boolean.parseBoolean(properties.getProperty(mandatoryProperty));
+
+        /** If the feature is enabled we check if the mandatory dependencies for the features are set */
+        if (functionEnabled) {
+          List<String> dependencies = mandatoryDependencies.get(mandatoryProperty);
+          for (String dep : dependencies) {
+            if (properties.get(dep) == null) {
+              notFoundList.add(dep);
+            }
           }
         }
       } else {

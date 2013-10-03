@@ -42,10 +42,10 @@ import java.lang.reflect.Method;
 public class SpocpRoleAuthorizor {
   public static final String SERVICE_PACKAGE = "se.su.it.svc.";
 
-  private static SpocpRoleAuthorizor instance = new SpocpRoleAuthorizor();
+  private static boolean initialized = false;
 
-  private static final int SPOCP_DEFAULT_PORT = 4751;
-  private static final String SPOCP_DEFAULT_SERVER = "spocp.su.se";
+  private static SpocpRoleAuthorizor instance;
+
   private static final org.apache.log4j.Logger logger = org.apache.log4j.Logger.getLogger(SpocpRoleAuthorizor.class);
 
   private SPOCPConnectionFactoryImpl spocpConnectionFactory = new SPOCPConnectionFactoryImpl();
@@ -53,9 +53,30 @@ public class SpocpRoleAuthorizor {
   /**
    * Create a new authorizor & set up the spocp connection factory
    */
-  private SpocpRoleAuthorizor() {
-    spocpConnectionFactory.setPort(SPOCP_DEFAULT_PORT);
-    spocpConnectionFactory.setServer(SPOCP_DEFAULT_SERVER);
+  private SpocpRoleAuthorizor() {}
+
+  /**
+   * Initializes the SpocpRoleAuthenticator, needs to be done before getInstance can be used.
+   *
+   * @param server
+   * @param port
+   */
+  public static synchronized void initialize(String server, String port) {
+    if (server == null) {
+      throw new IllegalArgumentException("Spocp server must be specified.");
+    }
+
+    Integer spocpPort = Integer.parseInt(port);
+
+    if (!initialized) {
+      instance = new SpocpRoleAuthorizor();
+      instance.spocpConnectionFactory.setPort(spocpPort);
+      instance.spocpConnectionFactory.setServer(server);
+      initialized = true;
+      logger.info("SpocpRoleAuthorizor has been initialized.");
+    } else {
+      logger.info("SpocpRoleAuthorizor has already been initialized.");
+    }
   }
 
   /**
@@ -64,6 +85,9 @@ public class SpocpRoleAuthorizor {
    * @return a SpocpRoleAuthorizor
    */
   public static SpocpRoleAuthorizor getInstance() {
+    if (!initialized) {
+      throw new IllegalStateException("Role Authorizor has not yet been initialized.");
+    }
     return instance;
   }
 
