@@ -76,9 +76,9 @@ public class Start {
   public static final String SPNEGO_KDC_PROPERTY_KEY          = DEFAULT_SERVER_PREFIX + "spnego.kdc";
   public static final String SPNEGO_PROPERTIES_PROPERTY_KEY   = DEFAULT_SERVER_PREFIX + "spnego.properties";
 
-  public static final String SPOCP_ENABLED_PROPERTY_KEY       = DEFAULT_SERVER_PREFIX + "spocp_enabled";
-  public static final String SPOCP_SERVER_PROPERTY_KEY        = DEFAULT_SERVER_PREFIX + "spocp_server";
-  public static final String SPOCP_PORT_PROPERTY_KEY          = DEFAULT_SERVER_PREFIX + "spocp_port";
+  public static final String SPOCP_ENABLED_PROPERTY_KEY       = DEFAULT_SERVER_PREFIX + "spocp.enabled";
+  public static final String SPOCP_SERVER_PROPERTY_KEY        = DEFAULT_SERVER_PREFIX + "spocp.server";
+  public static final String SPOCP_PORT_PROPERTY_KEY          = DEFAULT_SERVER_PREFIX + "spocp.port";
 
   private static final ArrayList<String> mandatoryProperties = new ArrayList<String>() {{
     add(PORT_PROPERTY_KEY);
@@ -255,8 +255,18 @@ public class Start {
     List<String> notFoundList = new ArrayList<String>();
 
     for (String mandatoryProperty : mandatoryProperties) {
-      if (mandatoryProperty.equals(SSL_ENABLED_PROPERTY_KEY) || mandatoryProperty.equals(SPOCP_ENABLED_PROPERTY_KEY)) {
+      if (mandatoryDependencies.containsKey(mandatoryProperty)) {
+
+        /** See if the property is actually in the config file. */
+        if (properties.getProperty(mandatoryProperty) == null) {
+          notFoundList.add(mandatoryProperty);
+          continue;
+        }
+
+        /** If the property is set we check if the feature is enabled */
         boolean functionEnabled = Boolean.parseBoolean(properties.getProperty(mandatoryProperty));
+
+        /** If the feature is enabled we check if the mandatory dependencies for the features are set */
         if (functionEnabled) {
           List<String> dependencies = mandatoryDependencies.get(mandatoryProperty);
           for (String dep : dependencies) {
