@@ -77,6 +77,7 @@ class SuCxfAuthenticatorTest {
     expect(mockAuthentication.getUserIdentity()).andReturn(null)
 
     def mock = createPartialMock(SuCxfAuthenticator, 'doValidateRequest', 'isWsdlRequest')
+    mock.spocpEnabled = true;
     expectPrivate(mock, 'doValidateRequest', mockRequest, mockResponse, false).andReturn(mockAuthentication)
     expectPrivate(mock, 'isWsdlRequest', anyObject()).andReturn(false)
     replayAll(mock, mockAuthentication, mockRequest)
@@ -98,6 +99,7 @@ class SuCxfAuthenticatorTest {
     expect(mockAuthentication.getUserIdentity()).andReturn(mockIdentity)
 
     def mock = createPartialMock(SuCxfAuthenticator, 'doValidateRequest', 'isWsdlRequest')
+    mock.spocpEnabled = true;
     expectPrivate(mock, 'doValidateRequest', mockRequest, mockResponse, false).andReturn(mockAuthentication)
     expectPrivate(mock, 'isWsdlRequest', anyObject()).andReturn(false)
     replayAll(mock, mockAuthentication, mockIdentity, mockRequest)
@@ -126,6 +128,7 @@ class SuCxfAuthenticatorTest {
     expect(mockAuthentication.getUserIdentity()).andReturn(mockIdentity)
 
     def mock = createPartialMock(SuCxfAuthenticator, 'doValidateRequest', 'isWsdlRequest')
+    mock.spocpEnabled = true;
     expectPrivate(mock, 'doValidateRequest', mockRequest, mockResponse, false).andReturn(mockAuthentication)
     expectPrivate(mock, 'isWsdlRequest', anyObject()).andReturn(false)
     replayAll(mock, mockAuthentication, mockIdentity, mockAuthorizor, mockPrincipal, mockRequest, SpocpRoleAuthorizor)
