@@ -43,6 +43,7 @@ import org.eclipse.jetty.util.resource.Resource;
 import org.eclipse.jetty.webapp.WebAppContext;
 import se.su.it.svc.filter.FilterHandler;
 import se.su.it.svc.security.SpnegoAndKrb5LoginService;
+import se.su.it.svc.security.SpocpRoleAuthorizor;
 import se.su.it.svc.security.SuCxfAuthenticator;
 
 import java.io.File;
@@ -74,6 +75,10 @@ public class Start {
   public static final String SPNEGO_KDC_PROPERTY_KEY          = DEFAULT_SERVER_PREFIX + "spnego.kdc";
   public static final String SPNEGO_PROPERTIES_PROPERTY_KEY   = DEFAULT_SERVER_PREFIX + "spnego.properties";
 
+  public static final String SPOCP_ENABLED_PROPERTY_KEY       = DEFAULT_SERVER_PREFIX + "spocp_enabled";
+  public static final String SPOCP_SERVER_PROPERTY_KEY        = DEFAULT_SERVER_PREFIX + "spocp_server";
+  public static final String SPOCP_PORT_PROPERTY_KEY          = DEFAULT_SERVER_PREFIX + "spocp_port";
+
   private static final ArrayList<String> mandatoryProperties = new ArrayList<String>() {{
     add(PORT_PROPERTY_KEY);
     add(BIND_ADDRESS_PROPERTY_KEY);
@@ -100,6 +105,13 @@ public class Start {
 
     // Begin Check if properties file is defined as define argument
     Properties properties = loadProperties();
+
+    boolean spocpEnabled = Boolean.parseBoolean(properties.getProperty(SPOCP_ENABLED_PROPERTY_KEY));
+
+    if (spocpEnabled) {
+      SpocpRoleAuthorizor.initialize(properties.getProperty(SPOCP_SERVER_PROPERTY_KEY),
+          properties.getProperty(SPOCP_PORT_PROPERTY_KEY));
+    }
 
     // End Check if properties file is defined as define argument
     int httpPort = Integer.parseInt(properties.getProperty(PORT_PROPERTY_KEY).trim());
