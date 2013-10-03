@@ -88,8 +88,19 @@ public class Start {
     add(SPNEGO_REALM_PROPERTY_KEY);
     add(SPNEGO_KDC_PROPERTY_KEY);
     add(SPNEGO_PROPERTIES_PROPERTY_KEY);
+    add(SPOCP_ENABLED_PROPERTY_KEY);
   }};
 
+  private static final Map<String, List<String>> mandatoryDependencies = new HashMap<String, List<String>>() {{
+    put(SSL_ENABLED_PROPERTY_KEY, new LinkedList<String>() {{
+      add(SSL_KEYSTORE_PROPERTY_KEY);
+      add(SSL_PASSWORD_PROPERTY_KEY);
+    }});
+    put(SPOCP_ENABLED_PROPERTY_KEY, new LinkedList<String>() {{
+      add(SPOCP_SERVER_PROPERTY_KEY);
+      add(SPOCP_PORT_PROPERTY_KEY);
+    }});
+  }};
 
   public static void main(String[] args) {
     // TODO: Handle config file as an arg?
@@ -244,14 +255,14 @@ public class Start {
     List<String> notFoundList = new ArrayList<String>();
 
     for (String mandatoryProperty : mandatoryProperties) {
-      if (mandatoryProperty.equals(SSL_ENABLED_PROPERTY_KEY)) {
-        boolean useSSL = Boolean.parseBoolean(properties.getProperty(SSL_ENABLED_PROPERTY_KEY));
-        if (useSSL) {
-          if (properties.get(SSL_KEYSTORE_PROPERTY_KEY) == null) {
-            notFoundList.add(SSL_KEYSTORE_PROPERTY_KEY);
-          }
-          if (properties.get(SSL_PASSWORD_PROPERTY_KEY) == null) {
-            notFoundList.add(SSL_PASSWORD_PROPERTY_KEY);
+      if (mandatoryProperty.equals(SSL_ENABLED_PROPERTY_KEY) || mandatoryProperty.equals(SPOCP_ENABLED_PROPERTY_KEY)) {
+        boolean functionEnabled = Boolean.parseBoolean(properties.getProperty(mandatoryProperty));
+        if (functionEnabled) {
+          List<String> dependencies = mandatoryDependencies.get(mandatoryProperty);
+          for (String dep : dependencies) {
+            if (properties.get(dep) == null) {
+              notFoundList.add(dep);
+            }
           }
         }
       } else {
