@@ -134,8 +134,12 @@ public class SpocpRoleAuthorizor {
       Class annotationClass = classLoader.loadClass(SuCxfSvcSpocpRole.class.getName());
 
       Annotation annotation = serviceClass.getAnnotation(annotationClass);
-      Method m = annotation.getClass().getMethod("role", null);
-      role = (String) m.invoke(annotation, null);
+
+      /** If class has the requested annotation we check the role. */
+      if (annotation != null) {
+        Method m = annotation.getClass().getMethod("role", null);
+        role = (String) m.invoke(annotation, null);
+      }
     } catch (Exception e) {
       // Swallow exceptions & return null
       logger.error("Could not figure out class name from request. Faulty classname:" + className, e);
