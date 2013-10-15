@@ -1,5 +1,6 @@
 package se.su.it.svc.security
 
+import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.powermock.core.classloader.annotations.PrepareForTest
@@ -39,6 +40,11 @@ class SpocpRoleAuthorizorTest {
    */
   class DummyServiceWithoutRole {}
 
+  @Before
+  void setup() {
+    Whitebox.setInternalState(SpocpRoleAuthorizor.class, 'initialized', false)
+  }
+
   @Test(expected=IllegalArgumentException.class)
   void "initialize: When missing server argument"() {
     SpocpRoleAuthorizor.initialize(null, "1");
@@ -66,7 +72,7 @@ class SpocpRoleAuthorizorTest {
 
   @Test
   void "getInstance returns the same instance"() {
-
+    SpocpRoleAuthorizor.initialize("foo", "1234")
     def first = SpocpRoleAuthorizor.instance
     def second = SpocpRoleAuthorizor.instance
     assert first == second
@@ -78,6 +84,7 @@ class SpocpRoleAuthorizorTest {
     expect(SpocpRoleAuthorizor.classNameFromURI(anyObject(String))).andReturn('')
     replay(SpocpRoleAuthorizor)
 
+    SpocpRoleAuthorizor.initialize("foo", "1234")
     assert !SpocpRoleAuthorizor.instance.checkRole(null, "")
   }
 
@@ -87,6 +94,7 @@ class SpocpRoleAuthorizorTest {
     expect(SpocpRoleAuthorizor.classNameFromURI(anyObject(String))).andReturn(null)
     replay(SpocpRoleAuthorizor)
 
+    SpocpRoleAuthorizor.initialize("foo", "1234")
     assert !SpocpRoleAuthorizor.instance.checkRole('foo', null)
   }
 
@@ -97,6 +105,7 @@ class SpocpRoleAuthorizorTest {
     expect(SpocpRoleAuthorizor.getRole(anyObject(String))).andReturn(null)
     replay(SpocpRoleAuthorizor)
 
+    SpocpRoleAuthorizor.initialize("foo", "1234")
     assert SpocpRoleAuthorizor.instance.checkRole('foo', 'foo')
   }
 
@@ -179,6 +188,7 @@ class SpocpRoleAuthorizorTest {
     expect(mockFactory.getConnection()).andThrow(new SPOCPException(''))
     replay(mockFactory)
 
+    SpocpRoleAuthorizor.initialize("foo", "1234")
     def authorizor = SpocpRoleAuthorizor.instance
     authorizor.spocpConnectionFactory = mockFactory
 
@@ -196,6 +206,7 @@ class SpocpRoleAuthorizorTest {
 
     replayAll(mockFactory, mockConnection)
 
+    SpocpRoleAuthorizor.initialize("foo", "1234")
     def authorizor = SpocpRoleAuthorizor.instance
     authorizor.spocpConnectionFactory = mockFactory
 
@@ -218,6 +229,7 @@ class SpocpRoleAuthorizorTest {
 
     replayAll(mockFactory, mockConnection)
 
+    SpocpRoleAuthorizor.initialize("foo", "1234")
     def authorizor = SpocpRoleAuthorizor.instance
     authorizor.spocpConnectionFactory = mockFactory
 
@@ -240,6 +252,7 @@ class SpocpRoleAuthorizorTest {
 
     replayAll(mockFactory, mockConnection)
 
+    SpocpRoleAuthorizor.initialize("foo", "1234")
     def authorizor = SpocpRoleAuthorizor.instance
     authorizor.spocpConnectionFactory = mockFactory
 
@@ -257,6 +270,7 @@ class SpocpRoleAuthorizorTest {
 
     replayAll(mockFactory, mockConnection)
 
+    SpocpRoleAuthorizor.initialize("foo", "1234")
     def authorizor = SpocpRoleAuthorizor.instance
     authorizor.spocpConnectionFactory = mockFactory
 
