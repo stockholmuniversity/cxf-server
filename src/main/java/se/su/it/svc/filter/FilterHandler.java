@@ -39,6 +39,9 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.util.Properties;
 
 /**
@@ -54,14 +57,7 @@ public class FilterHandler extends AbstractHandler {
   /**
    *
    */
-  private String tmpDir = null;
-
-  /**
-   *
-   * @param tmpDir
-   */
-  public FilterHandler(final String tmpDir) {
-    this.tmpDir = tmpDir;
+  public FilterHandler() {
   }
 
   /**
@@ -82,10 +78,12 @@ public class FilterHandler extends AbstractHandler {
       response.setStatus(HttpServletResponse.SC_OK);
       Properties versionProps = new Properties();
       String noinfo = "No information available";
+
+      // TODO: This should be moved to the constructor. No point in reading the resources for every request.
+      URLClassLoader cl = (URLClassLoader) Thread.currentThread().getContextClassLoader();
+      InputStream inputStream = cl.getResourceAsStream("WEB-INF/classes/version.properties");
       try {
-        FileInputStream in = new FileInputStream(tmpDir + "/webapp/WEB-INF/classes/version.properties");
-        versionProps.load(in);
-        in.close();
+        versionProps.load(inputStream);
         String name = versionProps.getProperty("project.name");
         String version = versionProps.getProperty("project.version");
         String builddate = versionProps.getProperty("project.builddate");
@@ -95,14 +93,15 @@ public class FilterHandler extends AbstractHandler {
       } catch (Exception e) {
         logger.debug("Warning: Could not read version.properties file. ", e);
         response.getWriter().println(noinfo);
+      } finally {
+        inputStream.close();
       }
 
       response.getWriter().println("<br /><br />");
 
+      inputStream = cl.getResourceAsStream("version.properties");
       try {
-        FileInputStream in = new FileInputStream(tmpDir + "/webapp/version.properties");
-        versionProps.load(in);
-        in.close();
+        versionProps.load(inputStream);
         String name = versionProps.getProperty("project.name");
         String version = versionProps.getProperty("project.version");
         String builddate = versionProps.getProperty("project.builddate");
@@ -112,6 +111,8 @@ public class FilterHandler extends AbstractHandler {
       } catch (Exception e) {
         logger.debug("Warning: Could not read server version.properties file. ", e);
         response.getWriter().println(noinfo);
+      } finally {
+        inputStream.close();
       }
 
       baseRequest.setHandled(true);

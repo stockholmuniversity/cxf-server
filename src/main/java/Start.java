@@ -55,6 +55,7 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
+import java.security.ProtectionDomain;
 import java.util.*;
 
 
@@ -163,22 +164,21 @@ public class Start {
         server.setConnectors(new Connector[]{connector});
       }
 
-      URL url = Start.class.getClassLoader().getResource("Start.class");
-      File warFile = new File(((JarURLConnection) url.openConnection()).getJarFile().getName());
       WebAppContext context = new WebAppContext();
-      File webbAppFp = new File("webapp");
-      webbAppFp.mkdir();
-      context.setTempDirectory(webbAppFp);
+      context.setServer(server);
       context.setContextPath("/");
-      context.setWar(warFile.getAbsolutePath());
+
+      ProtectionDomain protectionDomain = Start.class.getProtectionDomain();
+      URL location = protectionDomain.getCodeSource().getLocation();
+      context.setWar(location.toExternalForm());
 
       // Add webapp to threads context classpath
       ClassLoader ctcl = Thread.currentThread().getContextClassLoader();
-      URLClassLoader urlcl = new URLClassLoader(new URL[]{webbAppFp.toURI().toURL()}, ctcl);
+      URLClassLoader urlcl = new URLClassLoader(new URL[]{location}, ctcl);
       Thread.currentThread().setContextClassLoader(urlcl);
 
       RequestLogHandler requestLogHandler = new RequestLogHandler();
-      FilterHandler fh = new FilterHandler(context.getTempDirectory().toString());
+      FilterHandler fh = new FilterHandler();
 
       HandlerList handlers = new HandlerList();
       handlers.setHandlers(new Handler[] { requestLogHandler, fh, context, new DefaultHandler() });
