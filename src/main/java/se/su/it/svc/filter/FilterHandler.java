@@ -37,11 +37,11 @@ import org.eclipse.jetty.server.handler.AbstractHandler;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URL;
 import java.net.URLClassLoader;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.Properties;
 
 /**
@@ -54,10 +54,72 @@ public class FilterHandler extends AbstractHandler {
    */
   private static final org.apache.log4j.Logger logger = org.apache.log4j.Logger.getLogger(FilterHandler.class);
 
+  private final String statusText;
+
+  private static final String PROJECT_NAME_KEY = "project.name";
+  private static final String PROJECT_VERSION_KEY = "project.version";
+  private static final String PROJECT_BUILD_DATE_KEY = "project.builddate";
+
+  private static final String NOINFO = "No information available";
+
   /**
    *
    */
   public FilterHandler() {
+
+    StringBuilder sb = new StringBuilder();
+
+    URLClassLoader cl = (URLClassLoader) Thread.currentThread().getContextClassLoader();
+
+    sb.append(createInfoText(cl, "WEB-INF/classes/version.properties", new LinkedHashMap<String, String>() {{
+      put(PROJECT_NAME_KEY, "Name: ");
+      put(PROJECT_VERSION_KEY, "Version: ");
+      put(PROJECT_BUILD_DATE_KEY, "Build Time: ");
+    }}));
+
+    sb.append("<br /><br />");
+
+    sb.append(createInfoText(cl, "version.properties", new LinkedHashMap<String, String>() {{
+      put(PROJECT_NAME_KEY, "Server Name: ");
+      put(PROJECT_VERSION_KEY, "Server Version: ");
+      put(PROJECT_BUILD_DATE_KEY, "Server Build Time: ");
+    }}));
+
+
+    statusText = sb.toString();
+  }
+
+  private static String createInfoText(URLClassLoader cl, String filePath, Map attributes) {
+    StringBuilder sb = new StringBuilder();
+
+    Properties versionProps = new Properties();
+
+    InputStream inputStream = cl.getResourceAsStream(filePath);
+    try {
+      versionProps.load(inputStream);
+      String name = versionProps.getProperty(PROJECT_NAME_KEY);
+      String version = versionProps.getProperty(PROJECT_VERSION_KEY);
+      String builddate = versionProps.getProperty(PROJECT_BUILD_DATE_KEY);
+      sb.append(attributes.get(PROJECT_NAME_KEY))
+          .append(name != null && name.length() > 0 ? name : NOINFO)
+          .append("<br />");
+      sb.append(attributes.get(PROJECT_VERSION_KEY))
+          .append(version != null && version.length() > 0 ? version : NOINFO)
+          .append("<br />");
+      sb.append(attributes.get(PROJECT_BUILD_DATE_KEY))
+          .append(builddate != null && builddate.length() > 0 ? builddate : NOINFO)
+          .append("<br />");
+    } catch (Exception e) {
+      logger.debug("Warning: Could not read version.properties file. ", e);
+      sb.append(NOINFO);
+    } finally {
+      try {
+        inputStream.close();
+      } catch (IOException ioe) {
+        logger.error("Could not close stream when reading resource", ioe);
+      }
+    }
+    return sb.toString();
   }
 
   /**
@@ -76,45 +138,7 @@ public class FilterHandler extends AbstractHandler {
         || baseRequest.getRequestURI().equalsIgnoreCase("/")) {
       response.setContentType("text/html");
       response.setStatus(HttpServletResponse.SC_OK);
-      Properties versionProps = new Properties();
-      String noinfo = "No information available";
-
-      // TODO: This should be moved to the constructor. No point in reading the resources for every request.
-      URLClassLoader cl = (URLClassLoader) Thread.currentThread().getContextClassLoader();
-      InputStream inputStream = cl.getResourceAsStream("WEB-INF/classes/version.properties");
-      try {
-        versionProps.load(inputStream);
-        String name = versionProps.getProperty("project.name");
-        String version = versionProps.getProperty("project.version");
-        String builddate = versionProps.getProperty("project.builddate");
-        response.getWriter().println("Name: " + (name != null && name.length() > 0 ? name : noinfo) + "<br />");
-        response.getWriter().println("Version: " + (version != null && version.length() > 0 ? version : noinfo) + "<br />");
-        response.getWriter().println("Build Time: " + (builddate != null && builddate.length() > 0 ? builddate : noinfo) + "<br />");
-      } catch (Exception e) {
-        logger.debug("Warning: Could not read version.properties file. ", e);
-        response.getWriter().println(noinfo);
-      } finally {
-        inputStream.close();
-      }
-
-      response.getWriter().println("<br /><br />");
-
-      inputStream = cl.getResourceAsStream("version.properties");
-      try {
-        versionProps.load(inputStream);
-        String name = versionProps.getProperty("project.name");
-        String version = versionProps.getProperty("project.version");
-        String builddate = versionProps.getProperty("project.builddate");
-        response.getWriter().println("Server Name: " + (name != null && name.length() > 0 ? name : noinfo) + "<br />");
-        response.getWriter().println("Server Version: " + (version != null && version.length() > 0 ? version : noinfo) + "<br />");
-        response.getWriter().println("Server Build Time: " + (builddate != null && builddate.length() > 0 ? builddate : noinfo) + "<br />");
-      } catch (Exception e) {
-        logger.debug("Warning: Could not read server version.properties file. ", e);
-        response.getWriter().println(noinfo);
-      } finally {
-        inputStream.close();
-      }
-
+      response.getWriter().println(statusText);
       baseRequest.setHandled(true);
       return;
     }
