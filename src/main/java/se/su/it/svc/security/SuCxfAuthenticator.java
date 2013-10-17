@@ -36,6 +36,7 @@ import org.eclipse.jetty.security.UserAuthentication;
 import org.eclipse.jetty.security.authentication.SpnegoAuthenticator;
 import org.eclipse.jetty.server.Authentication;
 import org.eclipse.jetty.server.UserIdentity;
+import org.slf4j.LoggerFactory;
 
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
@@ -43,7 +44,7 @@ import javax.servlet.http.HttpServletRequest;
 
 public class SuCxfAuthenticator extends SpnegoAuthenticator {
 
-  private static final org.apache.log4j.Logger logger = org.apache.log4j.Logger.getLogger(SuCxfAuthenticator.class);
+  static final org.slf4j.Logger logger = LoggerFactory.getLogger(SuCxfAuthenticator.class);
 
   private boolean spocpEnabled = false;
 
