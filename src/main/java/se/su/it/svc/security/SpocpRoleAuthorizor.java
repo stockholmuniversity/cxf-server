@@ -31,6 +31,7 @@
 
 package se.su.it.svc.security;
 
+import org.slf4j.LoggerFactory;
 import org.spocp.client.SPOCPConnection;
 import org.spocp.client.SPOCPConnectionFactoryImpl;
 import org.spocp.client.SPOCPResult;
@@ -46,7 +47,7 @@ public class SpocpRoleAuthorizor {
 
   private static SpocpRoleAuthorizor instance;
 
-  private static final org.apache.log4j.Logger logger = org.apache.log4j.Logger.getLogger(SpocpRoleAuthorizor.class);
+  static final org.slf4j.Logger logger = LoggerFactory.getLogger(SpocpRoleAuthorizor.class);
 
   private SPOCPConnectionFactoryImpl spocpConnectionFactory = new SPOCPConnectionFactoryImpl();
 

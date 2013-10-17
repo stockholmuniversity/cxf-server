@@ -33,6 +33,7 @@ package se.su.it.svc.filter;
 
 import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.handler.AbstractHandler;
+import org.slf4j.LoggerFactory;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
@@ -52,7 +53,7 @@ public class FilterHandler extends AbstractHandler {
   /**
    *
    */
-  private static final org.apache.log4j.Logger logger = org.apache.log4j.Logger.getLogger(FilterHandler.class);
+  static final org.slf4j.Logger logger = LoggerFactory.getLogger(FilterHandler.class);
 
   private final String statusText;
 
