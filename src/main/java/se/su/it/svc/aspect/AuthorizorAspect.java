@@ -44,9 +44,9 @@ import javax.servlet.http.HttpServletResponse;
 import java.lang.annotation.Annotation;
 
 @Aspect
-public class SpocpAspect {
+public class AuthorizorAspect {
 
-  static final org.slf4j.Logger logger = LoggerFactory.getLogger(SpocpAspect.class);
+  static final org.slf4j.Logger logger = LoggerFactory.getLogger(AuthorizorAspect.class);
 
   private Authorizor authorizor;
 
