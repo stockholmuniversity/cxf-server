@@ -40,6 +40,7 @@ import org.eclipse.jetty.util.component.AbstractLifeCycle;
 import org.eclipse.jetty.util.log.Log;
 import org.eclipse.jetty.util.log.Logger;
 import org.ietf.jgss.*;
+import org.slf4j.LoggerFactory;
 
 import javax.security.auth.Subject;
 
@@ -58,7 +59,8 @@ public final class SpnegoAndKrb5LoginService extends AbstractLifeCycle implement
    */
   public static final String OID_MECH_SPNEGO = "1.3.6.1.5.5.2";
 
-  private static final Logger LOG = Log.getLogger(SpnegoAndKrb5LoginService.class);
+  static final org.slf4j.Logger logger = LoggerFactory.getLogger(SpnegoAndKrb5LoginService.class);
+
 
   private String name;
   private IdentityService service;
@@ -100,10 +102,10 @@ public final class SpnegoAndKrb5LoginService extends AbstractLifeCycle implement
       String clientName = srcName.toString();
       String role = clientName.substring(clientName.indexOf('@') + 1);
 
-      LOG.debug("GSS: Established a security context");
-      LOG.debug("GSS: Client Principal is: " + srcName);
-      LOG.debug("GSS: Server Principal is: " + gssContext.getTargName());
-      LOG.debug("GSS: Client Default Role: " + role);
+      logger.debug("GSS: Established a security context");
+      logger.debug("GSS: Client Principal is: " + srcName);
+      logger.debug("GSS: Server Principal is: " + gssContext.getTargName());
+      logger.debug("GSS: Client Default Role: " + role);
 
       SpnegoUserPrincipal user = new SpnegoUserPrincipal(clientName, authToken);
       Subject subject = new Subject();
@@ -112,8 +114,8 @@ public final class SpnegoAndKrb5LoginService extends AbstractLifeCycle implement
       return service.newUserIdentity(subject, user, new String[]{role});
     } catch (GSSException gsse) {
       // Can't throw exception forward due to interface implementation
-      LOG.info("GSS: Failed while validating credentials: " + gsse.getMessage());
-      LOG.debug(gsse);
+      logger.info("GSS: Failed while validating credentials: " + gsse.getMessage());
+      logger.debug("", gsse);
     }
 
     return null;

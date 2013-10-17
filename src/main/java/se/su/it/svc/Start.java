@@ -1,4 +1,4 @@
-/*
+package se.su.it.svc;/*
  * Copyright (c) 2013, IT Services, Stockholm University
  * All rights reserved.
  *
@@ -29,9 +29,6 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-import org.apache.log4j.Level;
-import org.apache.log4j.LogManager;
-import org.eclipse.jetty.security.Authenticator;
 import org.eclipse.jetty.server.Connector;
 import org.eclipse.jetty.server.Handler;
 import org.eclipse.jetty.server.NCSARequestLog;
@@ -42,28 +39,23 @@ import org.eclipse.jetty.server.handler.RequestLogHandler;
 import org.eclipse.jetty.server.ssl.SslSocketConnector;
 import org.eclipse.jetty.util.resource.Resource;
 import org.eclipse.jetty.webapp.WebAppContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import se.su.it.svc.filter.FilterHandler;
 import se.su.it.svc.security.SpnegoAndKrb5LoginService;
 import se.su.it.svc.security.SpocpRoleAuthorizor;
 import se.su.it.svc.security.SuCxfAuthenticator;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.RandomAccessFile;
-import java.net.JarURLConnection;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.nio.MappedByteBuffer;
-import java.nio.channels.FileChannel;
 import java.security.ProtectionDomain;
 import java.util.*;
 
 
-public class Start {
-  private static final org.apache.log4j.Logger logger = org.apache.log4j.Logger.getLogger(Start.class);
+public abstract class Start {
+  static final Logger logger = LoggerFactory.getLogger(Start.class);
 
   public static final String DEFAULT_LOG_FILE_NAME_PROPERTY_KEY = "log.file";
-  public static final String DEFAULT_CONFIG_FILE_NAME_PROPERTY_KEY = "config.properties";
 
   public static final String DEFAULT_SERVER_PREFIX = "cxf-server.";
 
@@ -103,42 +95,33 @@ public class Start {
     }});
   }};
 
-  public static void main(String[] args) {
-    // TODO: Handle config file as an arg?
-    String logfile = System.getProperty(DEFAULT_LOG_FILE_NAME_PROPERTY_KEY);
+  public static synchronized void start(Properties config) {
 
-    if (logfile != null) {
-      ((org.apache.log4j.DailyRollingFileAppender) LogManager.getRootLogger().getAppender("A")).setFile(logfile);
-      ((org.apache.log4j.DailyRollingFileAppender) LogManager.getRootLogger().getAppender("A")).activateOptions();
-    }
+    checkDefinedConfigFileProperties(config);
 
-    if (System.getProperty("DEBUG") != null) {
-      LogManager.getRootLogger().setLevel(Level.DEBUG);
-    }
+    String logfile = config.getProperty(DEFAULT_LOG_FILE_NAME_PROPERTY_KEY);
 
-    // Begin Check if properties file is defined as define argument
-    Properties properties = loadProperties();
-
-    boolean spocpEnabled = Boolean.parseBoolean(properties.getProperty(SPOCP_ENABLED_PROPERTY_KEY));
+    boolean spocpEnabled = Boolean.parseBoolean(config.getProperty(SPOCP_ENABLED_PROPERTY_KEY));
 
     if (spocpEnabled) {
-      SpocpRoleAuthorizor.initialize(properties.getProperty(SPOCP_SERVER_PROPERTY_KEY),
-          properties.getProperty(SPOCP_PORT_PROPERTY_KEY));
+      SpocpRoleAuthorizor.initialize(
+          config.getProperty(SPOCP_SERVER_PROPERTY_KEY),
+          config.getProperty(SPOCP_PORT_PROPERTY_KEY));
     }
 
-    // End Check if properties file is defined as define argument
-    int httpPort = Integer.parseInt(properties.getProperty(PORT_PROPERTY_KEY).trim());
-    String jettyBindAddress = properties.getProperty(BIND_ADDRESS_PROPERTY_KEY);
+    int httpPort = Integer.parseInt(config.getProperty(PORT_PROPERTY_KEY).trim());
+    String jettyBindAddress = config.getProperty(BIND_ADDRESS_PROPERTY_KEY);
+
     // extracting the config properties for ssl setup
-    boolean sslEnabled = Boolean.parseBoolean(properties.getProperty(SSL_ENABLED_PROPERTY_KEY));
-    String sslKeystore = properties.getProperty(SSL_KEYSTORE_PROPERTY_KEY);
-    String sslPassword = properties.getProperty(SSL_PASSWORD_PROPERTY_KEY);
+    boolean sslEnabled = Boolean.parseBoolean(config.getProperty(SSL_ENABLED_PROPERTY_KEY));
+    String sslKeystore = config.getProperty(SSL_KEYSTORE_PROPERTY_KEY);
+    String sslPassword = config.getProperty(SSL_PASSWORD_PROPERTY_KEY);
 
     //extracting the config for the spnegp setup
-    String spnegoConfigFileName = properties.getProperty(SPNEGO_CONFIG_FILE_PROPERTY_KEY);
-    String spnegoRealm = properties.getProperty(SPNEGO_REALM_PROPERTY_KEY);
-    String spnegoKdc = properties.getProperty(SPNEGO_KDC_PROPERTY_KEY);
-    String spnegoPropertiesFileName = properties.getProperty(SPNEGO_PROPERTIES_PROPERTY_KEY);
+    String spnegoConfigFileName = config.getProperty(SPNEGO_CONFIG_FILE_PROPERTY_KEY);
+    String spnegoRealm = config.getProperty(SPNEGO_REALM_PROPERTY_KEY);
+    String spnegoKdc = config.getProperty(SPNEGO_KDC_PROPERTY_KEY);
+    String spnegoPropertiesFileName = config.getProperty(SPNEGO_PROPERTIES_PROPERTY_KEY);
 
     try {
 
@@ -208,8 +191,6 @@ public class Start {
       authenticator.setSpocpEnabled(spocpEnabled);
       context.getSecurityHandler().setAuthenticator(authenticator);
 
-      Thread monitor = new MonitorThread();
-      monitor.start();
       server.start();
       logger.info("Server ready...");
       server.join();
@@ -217,38 +198,6 @@ public class Start {
     } catch (Exception ex) {
       logger.error("Server startup failed.", ex);
     }
-  }
-
-  private static Properties loadProperties() {
-    Properties properties = new Properties();
-    String definedConfigFileName = System.getProperty(DEFAULT_CONFIG_FILE_NAME_PROPERTY_KEY);
-
-    logger.info("The configuration variable config.properties was set to <" + definedConfigFileName.trim() + ">.\r\n Checking properties in file...");
-
-    try {
-      File file = new File(definedConfigFileName.trim());
-      if (!file.exists()) {
-        logger.error("<" + definedConfigFileName.trim() + "> the file was not found. Quitting....");
-        System.exit(10);
-      }
-      FileInputStream is = new FileInputStream(definedConfigFileName.trim());
-      properties.load(is);
-      is.close();
-      if (!checkDefinedConfigFileProperties(properties)) {
-        System.exit(10);
-      }
-    } catch (Exception e) {
-      logger.error("<" + definedConfigFileName.trim() + ">, got an exception trying to access file. Quitting....", e);
-      System.exit(10);
-    }
-
-    logger.info("\n");
-    logger.info("*** Properties ***");
-    for (Object property : properties.keySet()) {
-      logger.info(property + " => " + properties.get(property));
-    }
-
-    return properties;
   }
 
   private static boolean checkDefinedConfigFileProperties(Properties properties) {
@@ -294,170 +243,5 @@ public class Start {
     logger.error("Quitting because mandatory properties was missing...");
     return false;  //To change body of created methods use File | Settings | File Templates.
   }
-
-  private static class MonitorThread extends Thread {
-    private static final String APP = "se.su.it.svc";
-    private static final String JETTY = "org.eclipse.jetty";
-    private static final String CXF = "org.apache.cxf";
-    private static final String SPRING = "org.springframework";
-
-    private FileChannel fc;
-    private MappedByteBuffer mem;
-
-    public MonitorThread() {
-      setDaemon(true);
-      setName("MonitorThread");
-      try {
-        fc = new RandomAccessFile("/tmp/cxf-server-tmp.txt", "rw").getChannel();
-        mem = fc.map(FileChannel.MapMode.READ_WRITE, 0, 1);
-      } catch (Exception e) {
-      }
-    }
-
-    @Override
-    public void run() {
-      logger.info("Running monitor thread");
-      try {
-        while (true) {
-          byte req = mem.get(0);
-          Thread.sleep(2);
-          if (req != 0) {
-            mem.put(0, (byte) 0);
-            selectFunction(req);
-            req = 0;
-          }
-        }
-      } catch (Exception e) {
-      }
-    }
-
-    private void selectFunction(byte b) {
-      switch (b) {
-        case 1:
-          LogManager.getRootLogger().setLevel(Level.ALL);
-          break;
-        case 2:
-          LogManager.getRootLogger().setLevel(Level.TRACE);
-          break;
-        case 3:
-          LogManager.getRootLogger().setLevel(Level.DEBUG);
-          break;
-        case 4:
-          LogManager.getRootLogger().setLevel(Level.INFO);
-          break;
-        case 5:
-          LogManager.getRootLogger().setLevel(Level.WARN);
-          break;
-        case 6:
-          LogManager.getRootLogger().setLevel(Level.FATAL);
-          break;
-        case 7:
-          LogManager.getRootLogger().setLevel(Level.ERROR);
-          break;
-        case 8:
-          LogManager.getRootLogger().setLevel(Level.OFF);
-          break;
-        case 9:
-          LogManager.getLogger(APP).setLevel(Level.ALL);
-          break;
-        case 10:
-          LogManager.getLogger(APP).setLevel(Level.TRACE);
-          break;
-        case 11:
-          LogManager.getLogger(APP).setLevel(Level.DEBUG);
-          break;
-        case 12:
-          LogManager.getLogger(APP).setLevel(Level.INFO);
-          break;
-        case 13:
-          LogManager.getLogger(APP).setLevel(Level.WARN);
-          break;
-        case 14:
-          LogManager.getLogger(APP).setLevel(Level.FATAL);
-          break;
-        case 15:
-          LogManager.getLogger(APP).setLevel(Level.ERROR);
-          break;
-        case 16:
-          LogManager.getLogger(APP).setLevel(Level.OFF);
-          break;
-        case 17:
-          LogManager.getLogger(JETTY).setLevel(Level.ALL);
-          break;
-        case 18:
-          LogManager.getLogger(JETTY).setLevel(Level.TRACE);
-          break;
-        case 19:
-          LogManager.getLogger(JETTY).setLevel(Level.DEBUG);
-          break;
-        case 20:
-          LogManager.getLogger(JETTY).setLevel(Level.INFO);
-          break;
-        case 21:
-          LogManager.getLogger(JETTY).setLevel(Level.WARN);
-          break;
-        case 22:
-          LogManager.getLogger(JETTY).setLevel(Level.FATAL);
-          break;
-        case 23:
-          LogManager.getLogger(JETTY).setLevel(Level.ERROR);
-          break;
-        case 24:
-          LogManager.getLogger(JETTY).setLevel(Level.OFF);
-          break;
-        case 25:
-          LogManager.getLogger(CXF).setLevel(Level.ALL);
-          break;
-        case 26:
-          LogManager.getLogger(CXF).setLevel(Level.TRACE);
-          break;
-        case 27:
-          LogManager.getLogger(CXF).setLevel(Level.DEBUG);
-          break;
-        case 28:
-          LogManager.getLogger(CXF).setLevel(Level.INFO);
-          break;
-        case 29:
-          LogManager.getLogger(CXF).setLevel(Level.WARN);
-          break;
-        case 30:
-          LogManager.getLogger(CXF).setLevel(Level.FATAL);
-          break;
-        case 31:
-          LogManager.getLogger(CXF).setLevel(Level.ERROR);
-          break;
-        case 32:
-          LogManager.getLogger(CXF).setLevel(Level.OFF);
-          break;
-        case 33:
-          LogManager.getLogger(SPRING).setLevel(Level.ALL);
-          break;
-        case 34:
-          LogManager.getLogger(SPRING).setLevel(Level.TRACE);
-          break;
-        case 35:
-          LogManager.getLogger(SPRING).setLevel(Level.DEBUG);
-          break;
-        case 36:
-          LogManager.getLogger(SPRING).setLevel(Level.INFO);
-          break;
-        case 37:
-          LogManager.getLogger(SPRING).setLevel(Level.WARN);
-          break;
-        case 38:
-          LogManager.getLogger(SPRING).setLevel(Level.FATAL);
-          break;
-        case 39:
-          LogManager.getLogger(SPRING).setLevel(Level.ERROR);
-          break;
-        case 40:
-          LogManager.getLogger(SPRING).setLevel(Level.OFF);
-          break;
-        default:
-          break;
-      }
-    }
-  }
-
 
 }
