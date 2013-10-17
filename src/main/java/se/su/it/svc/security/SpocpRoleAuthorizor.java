@@ -35,21 +35,19 @@ import org.slf4j.LoggerFactory;
 import org.spocp.client.SPOCPConnection;
 import org.spocp.client.SPOCPConnectionFactoryImpl;
 import org.spocp.client.SPOCPResult;
-import se.su.it.svc.annotations.SuCxfSvcSpocpRole;
+import se.su.it.svc.annotations.AuthzRole;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 
-public class SpocpRoleAuthorizor {
+public class SpocpRoleAuthorizor implements Authorizor {
   public static final String SERVICE_PACKAGE = "se.su.it.svc.";
 
-  private static boolean initialized = false;
-
-  private static SpocpRoleAuthorizor instance;
+  private static SpocpRoleAuthorizor instance = null;
 
   static final org.slf4j.Logger logger = LoggerFactory.getLogger(SpocpRoleAuthorizor.class);
 
-  private SPOCPConnectionFactoryImpl spocpConnectionFactory = new SPOCPConnectionFactoryImpl();
+  private SPOCPConnectionFactoryImpl spocpConnectionFactory = null;
 
   /**
    * Create a new authorizor & set up the spocp connection factory
@@ -57,116 +55,49 @@ public class SpocpRoleAuthorizor {
   private SpocpRoleAuthorizor() {}
 
   /**
-   * Initializes the SpocpRoleAuthenticator, needs to be done before getInstance can be used.
-   *
-   * @param server
-   * @param port
-   */
-  public static synchronized void initialize(String server, String port) {
-    if (server == null) {
-      throw new IllegalArgumentException("Spocp server must be specified.");
-    }
-
-    Integer spocpPort = Integer.parseInt(port);
-
-    if (!initialized) {
-      instance = new SpocpRoleAuthorizor();
-      instance.spocpConnectionFactory.setPort(spocpPort);
-      instance.spocpConnectionFactory.setServer(server);
-      initialized = true;
-      logger.info("SpocpRoleAuthorizor has been initialized.");
-    } else {
-      logger.info("SpocpRoleAuthorizor has already been initialized.");
-    }
-  }
-
-  /**
    * Get an instance of this singleton.
    *
    * @return a SpocpRoleAuthorizor
    */
-  public static SpocpRoleAuthorizor getInstance() {
-    if (!initialized) {
-      throw new IllegalStateException("Role Authorizor has not yet been initialized.");
+  public static synchronized SpocpRoleAuthorizor getInstance() {
+    if (instance == null) {
+      instance = new SpocpRoleAuthorizor();
     }
     return instance;
+  }
+
+  public void setSpocpConnectionFactory(SPOCPConnectionFactoryImpl spocpConnectionFactory) {
+    this.spocpConnectionFactory = spocpConnectionFactory;
   }
 
   /**
    * Check the uid against a role for the class of the specified uri.
    *
    * @param uid the user uid.
-   * @param uri the uri to get the role for.
+   * @param role the uri to get the role for.
    *
    * @return true if the user has the role, otherwise false.
    */
-  public final boolean checkRole(String uid, String uri) {
-    boolean authorized = false;
+  @Override
+  public final boolean checkRole(String uid, String role) {
+    if (spocpConnectionFactory == null) {
+      throw new IllegalStateException("No SPOCPConnectionFactoryImpl has been set.");
+    }
 
-    String className = classNameFromURI(uri);
-    if (uid != null && className != null) {
+    boolean authorized;
 
-      String role = getRole(className);
-      if (role != null && role.length() > 0) {
-        authorized = doSpocpCall(uid.replaceAll("[/@].*$", ""), role);
-        logger.debug("SPOCP result for " + uid + " in role " + role + ": " + authorized);
-      } else {
-        logger.debug("No SPOCP Role authentication for: " + className + ". Call will be let through.");
-        return true;
-      }
+    if (role == null) {
+      logger.debug("No SPOCP authentication for user=': " + uid + "', role='" + role + "'.");
+      authorized = true;
+    } else if (uid == null) {
+      logger.debug("No uid to check for role='" + role + "'.");
+      authorized = false;
+    } else {
+      authorized = doSpocpCall(uid.replaceAll("[/@].*$", ""), role);
+      logger.debug("SPOCP result for " + uid + " in role " + role + ": " + authorized);
     }
 
     return authorized;
-  }
-
-  /**
-   * Get the role for the specified class name.
-   *
-   * @param className the name of the class to get the role for.
-   * @return the role name.
-   */
-  protected static String getRole(String className) {
-    String role = null;
-    ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-
-    try {
-      // TODO: Can we do this without reflection? Do we need the other class loader?
-      Class serviceClass = classLoader.loadClass(className);
-      Class annotationClass = classLoader.loadClass(SuCxfSvcSpocpRole.class.getName());
-
-      Annotation annotation = serviceClass.getAnnotation(annotationClass);
-
-      /** If class has the requested annotation we check the role. */
-      if (annotation != null) {
-        Method m = annotation.getClass().getMethod("role", null);
-        role = (String) m.invoke(annotation, null);
-      }
-    } catch (Exception e) {
-      // Swallow exceptions & return null
-      logger.error("Could not figure out class name from request. Faulty classname:" + className, e);
-    }
-
-    return role;
-  }
-
-  /**
-   * Get the class name corresponding to the specified uri.
-   *
-   * @param uri the uri.
-   * @return the class name.
-   */
-  protected static String classNameFromURI(String uri) {
-    String className = null;
-
-    if (uri != null) {
-      className = SERVICE_PACKAGE + uri.replaceAll("/", "");
-
-      if (className.equals(SERVICE_PACKAGE)) {
-        className = null;
-      }
-    }
-
-    return className;
   }
 
   /**

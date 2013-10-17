@@ -1,4 +1,4 @@
-package se.su.it.svc;/*
+/*
  * Copyright (c) 2013, IT Services, Stockholm University
  * All rights reserved.
  *
@@ -28,6 +28,7 @@ package se.su.it.svc;/*
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
+package se.su.it.svc;
 
 import org.eclipse.jetty.server.Connector;
 import org.eclipse.jetty.server.Handler;
@@ -69,10 +70,6 @@ public abstract class Start {
   public static final String SPNEGO_KDC_PROPERTY_KEY          = DEFAULT_SERVER_PREFIX + "spnego.kdc";
   public static final String SPNEGO_PROPERTIES_PROPERTY_KEY   = DEFAULT_SERVER_PREFIX + "spnego.properties";
 
-  public static final String SPOCP_ENABLED_PROPERTY_KEY       = DEFAULT_SERVER_PREFIX + "spocp.enabled";
-  public static final String SPOCP_SERVER_PROPERTY_KEY        = DEFAULT_SERVER_PREFIX + "spocp.server";
-  public static final String SPOCP_PORT_PROPERTY_KEY          = DEFAULT_SERVER_PREFIX + "spocp.port";
-
   private static final ArrayList<String> mandatoryProperties = new ArrayList<String>() {{
     add(PORT_PROPERTY_KEY);
     add(BIND_ADDRESS_PROPERTY_KEY);
@@ -81,17 +78,12 @@ public abstract class Start {
     add(SPNEGO_REALM_PROPERTY_KEY);
     add(SPNEGO_KDC_PROPERTY_KEY);
     add(SPNEGO_PROPERTIES_PROPERTY_KEY);
-    add(SPOCP_ENABLED_PROPERTY_KEY);
   }};
 
   private static final Map<String, List<String>> mandatoryDependencies = new HashMap<String, List<String>>() {{
     put(SSL_ENABLED_PROPERTY_KEY, new LinkedList<String>() {{
       add(SSL_KEYSTORE_PROPERTY_KEY);
       add(SSL_PASSWORD_PROPERTY_KEY);
-    }});
-    put(SPOCP_ENABLED_PROPERTY_KEY, new LinkedList<String>() {{
-      add(SPOCP_SERVER_PROPERTY_KEY);
-      add(SPOCP_PORT_PROPERTY_KEY);
     }});
   }};
 
@@ -100,14 +92,6 @@ public abstract class Start {
     checkDefinedConfigFileProperties(config);
 
     String logfile = config.getProperty(DEFAULT_LOG_FILE_NAME_PROPERTY_KEY);
-
-    boolean spocpEnabled = Boolean.parseBoolean(config.getProperty(SPOCP_ENABLED_PROPERTY_KEY));
-
-    if (spocpEnabled) {
-      SpocpRoleAuthorizor.initialize(
-          config.getProperty(SPOCP_SERVER_PROPERTY_KEY),
-          config.getProperty(SPOCP_PORT_PROPERTY_KEY));
-    }
 
     int httpPort = Integer.parseInt(config.getProperty(PORT_PROPERTY_KEY).trim());
     String jettyBindAddress = config.getProperty(BIND_ADDRESS_PROPERTY_KEY);
@@ -188,7 +172,6 @@ public abstract class Start {
       context.getSecurityHandler().setLoginService(loginService);
 
       SuCxfAuthenticator authenticator = new SuCxfAuthenticator();
-      authenticator.setSpocpEnabled(spocpEnabled);
       context.getSecurityHandler().setAuthenticator(authenticator);
 
       server.start();

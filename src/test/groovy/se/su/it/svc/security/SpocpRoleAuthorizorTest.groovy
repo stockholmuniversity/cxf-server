@@ -12,7 +12,7 @@ import org.spocp.SPOCPTokenInputStream
 import org.spocp.client.SPOCPConnection
 import org.spocp.client.SPOCPConnectionFactoryImpl
 import org.spocp.client.SPOCPResult
-import se.su.it.svc.annotations.SuCxfSvcSpocpRole
+import se.su.it.svc.annotations.AuthzRole
 
 import static org.easymock.EasyMock.anyObject
 import static org.easymock.EasyMock.anyString
@@ -32,7 +32,7 @@ class SpocpRoleAuthorizorTest {
   /**
    * Dummy class used for testing
    */
-  @SuCxfSvcSpocpRole(role = 'foo')
+  @AuthzRole(role = 'foo')
   class DummyServiceWithRole {}
 
   /**
@@ -42,37 +42,11 @@ class SpocpRoleAuthorizorTest {
 
   @Before
   void setup() {
-    Whitebox.setInternalState(SpocpRoleAuthorizor.class, 'initialized', false)
+    SpocpRoleAuthorizor.instance.spocpConnectionFactory = new SPOCPConnectionFactoryImpl()
   }
-
-  @Test(expected=IllegalArgumentException.class)
-  void "initialize: When missing server argument"() {
-    SpocpRoleAuthorizor.initialize(null, "1");
-  }
-
-  @Test(expected=IllegalArgumentException.class)
-  void "initialize: When missing port argument"() {
-    SpocpRoleAuthorizor.initialize("server", null);
-  }
-
-  @Test(expected=NumberFormatException.class)
-  void "initialize: When given an invalid port argument"() {
-    SpocpRoleAuthorizor.initialize("server", "server");
-  }
-
-  @Test
-  void "initialize: Test initializor"() {
-    SpocpRoleAuthorizor.initialize("server", "1")
-    assert Whitebox.getInternalState(SpocpRoleAuthorizor, "initialized") == true
-    SPOCPConnectionFactoryImpl spiml = Whitebox.getInternalState(SpocpRoleAuthorizor.instance, "spocpConnectionFactory")
-    assert spiml.server == "server"
-    assert spiml.port == 1
-  }
-
 
   @Test
   void "getInstance returns the same instance"() {
-    SpocpRoleAuthorizor.initialize("foo", "1234")
     def first = SpocpRoleAuthorizor.instance
     def second = SpocpRoleAuthorizor.instance
     assert first == second
@@ -80,106 +54,41 @@ class SpocpRoleAuthorizorTest {
 
   @Test
   void "checkRole returns false for uid=null"() {
-    mockStaticPartial(SpocpRoleAuthorizor, 'classNameFromURI')
-    expect(SpocpRoleAuthorizor.classNameFromURI(anyObject(String))).andReturn('')
-    replay(SpocpRoleAuthorizor)
-
-    SpocpRoleAuthorizor.initialize("foo", "1234")
     assert !SpocpRoleAuthorizor.instance.checkRole(null, "")
   }
 
   @Test
-  void "checkRole returns false for uri=null"() {
-    mockStaticPartial(SpocpRoleAuthorizor, 'classNameFromURI')
-    expect(SpocpRoleAuthorizor.classNameFromURI(anyObject(String))).andReturn(null)
-    replay(SpocpRoleAuthorizor)
-
-    SpocpRoleAuthorizor.initialize("foo", "1234")
-    assert !SpocpRoleAuthorizor.instance.checkRole('foo', null)
-  }
-
-  @Test
   void "checkRole returns true for role=null"() {
-    mockStaticPartial(SpocpRoleAuthorizor, 'classNameFromURI', 'getRole')
-    expect(SpocpRoleAuthorizor.classNameFromURI(anyObject(String))).andReturn('')
-    expect(SpocpRoleAuthorizor.getRole(anyObject(String))).andReturn(null)
-    replay(SpocpRoleAuthorizor)
-
-    SpocpRoleAuthorizor.initialize("foo", "1234")
-    assert SpocpRoleAuthorizor.instance.checkRole('foo', 'foo')
+    assert SpocpRoleAuthorizor.instance.checkRole('foo', null)
   }
 
   @Test
   void "checkRole returns true for true from spocp"() {
-    mockStaticPartial(SpocpRoleAuthorizor, 'classNameFromURI', 'getRole', 'doSpocpCall')
-    expect(SpocpRoleAuthorizor.classNameFromURI(anyObject(String))).andReturn('')
-    expect(SpocpRoleAuthorizor.getRole(anyObject(String))).andReturn('role')
-    replay(SpocpRoleAuthorizor)
-
     def mock = createPartialMock(SpocpRoleAuthorizor, 'doSpocpCall')
     expectPrivate(mock, 'doSpocpCall', 'foo', 'role')
             .andReturn(true)
     replay(mock)
+    mock.spocpConnectionFactory = new SPOCPConnectionFactoryImpl()
 
-    assert mock.checkRole('foo', 'foo')
+    assert mock.checkRole('foo', 'role')
   }
 
   @Test
   void "checkRole returns false for false from spocp"() {
-    mockStaticPartial(SpocpRoleAuthorizor, 'classNameFromURI', 'getRole', 'doSpocpCall')
-    expect(SpocpRoleAuthorizor.classNameFromURI(anyObject(String))).andReturn('')
-    expect(SpocpRoleAuthorizor.getRole(anyObject(String))).andReturn('role')
-    replay(SpocpRoleAuthorizor)
-
     def mock = createPartialMock(SpocpRoleAuthorizor, 'doSpocpCall')
     expectPrivate(mock, 'doSpocpCall', 'foo', 'role')
             .andReturn(false)
     replay(mock)
+    mock.spocpConnectionFactory = new SPOCPConnectionFactoryImpl()
 
-    assert !mock.checkRole('foo', 'foo')
+    assert !mock.checkRole('foo', 'role')
   }
 
-  @Test
-  void "getRole returns the role"() {
-    assert SpocpRoleAuthorizor.getRole(DummyServiceWithRole.name) == 'foo'
-  }
+  @Test(expected = IllegalStateException)
+  void "checkRole throws exception for no spocpConnectionFactory"() {
+    SpocpRoleAuthorizor.instance.spocpConnectionFactory = null
 
-  @Test
-  void "getRole returns null for no role annotation"() {
-    assert SpocpRoleAuthorizor.getRole(DummyServiceWithoutRole.name) == null
-  }
-
-  @Test
-  void "getRole returns null for exception"() {
-    def origClassLoader = Thread.currentThread().getContextClassLoader();
-
-    Thread.currentThread().setContextClassLoader([ loadClass: { String name -> throw new Exception() } ] as ClassLoader)
-    def role = SpocpRoleAuthorizor.getRole(DummyServiceWithRole.name)
-    Thread.currentThread().setContextClassLoader(origClassLoader)
-
-    assert role == null
-  }
-
-  @Test
-  void "classNameFromURI returns null for uri=null"() {
-    assert SpocpRoleAuthorizor.classNameFromURI(null) == null
-  }
-
-  @Test
-  void "classNameFromURI returns null for uri="() {
-    assert SpocpRoleAuthorizor.classNameFromURI("") == null
-  }
-
-  @Test
-  void "classNameFromURI returns null for uri=slash"() {
-    assert SpocpRoleAuthorizor.classNameFromURI("/") == null
-  }
-
-  @Test
-  void "classNameFromURI returns correct class name"() {
-    def name = DummyServiceWithRole.canonicalName
-
-    assert SpocpRoleAuthorizor.classNameFromURI(name) == SpocpRoleAuthorizor.SERVICE_PACKAGE + name
+    assert !SpocpRoleAuthorizor.instance.checkRole('foo', 'role')
   }
 
   @Test
@@ -188,7 +97,6 @@ class SpocpRoleAuthorizorTest {
     expect(mockFactory.getConnection()).andThrow(new SPOCPException(''))
     replay(mockFactory)
 
-    SpocpRoleAuthorizor.initialize("foo", "1234")
     def authorizor = SpocpRoleAuthorizor.instance
     authorizor.spocpConnectionFactory = mockFactory
 
@@ -206,7 +114,6 @@ class SpocpRoleAuthorizorTest {
 
     replayAll(mockFactory, mockConnection)
 
-    SpocpRoleAuthorizor.initialize("foo", "1234")
     def authorizor = SpocpRoleAuthorizor.instance
     authorizor.spocpConnectionFactory = mockFactory
 
@@ -229,7 +136,6 @@ class SpocpRoleAuthorizorTest {
 
     replayAll(mockFactory, mockConnection)
 
-    SpocpRoleAuthorizor.initialize("foo", "1234")
     def authorizor = SpocpRoleAuthorizor.instance
     authorizor.spocpConnectionFactory = mockFactory
 
@@ -252,7 +158,6 @@ class SpocpRoleAuthorizorTest {
 
     replayAll(mockFactory, mockConnection)
 
-    SpocpRoleAuthorizor.initialize("foo", "1234")
     def authorizor = SpocpRoleAuthorizor.instance
     authorizor.spocpConnectionFactory = mockFactory
 
@@ -270,7 +175,6 @@ class SpocpRoleAuthorizorTest {
 
     replayAll(mockFactory, mockConnection)
 
-    SpocpRoleAuthorizor.initialize("foo", "1234")
     def authorizor = SpocpRoleAuthorizor.instance
     authorizor.spocpConnectionFactory = mockFactory
 
