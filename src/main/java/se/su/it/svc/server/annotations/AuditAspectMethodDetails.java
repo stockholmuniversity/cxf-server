@@ -28,30 +28,15 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package se.su.it.svc.audit
 
-import org.junit.Test
+package se.su.it.svc.server.annotations;
 
-class AuditEntityTest {
+import java.lang.annotation.*;
 
-  @Test
-  void "getInstance: Test factory method"() {
-    AuditEntity auditEntity = AuditEntity.getInstance('1','2','3','4','5','6','7', ['11', '12'])
-
-    assert auditEntity.created       == '1'
-    assert auditEntity.operation     == '2'
-    assert auditEntity.text_args     == '3'
-    assert auditEntity.raw_args      == '4'
-    assert auditEntity.text_return   == '5'
-    assert auditEntity.raw_return    == '6'
-    assert auditEntity.state         == '7'
-    assert auditEntity.methodDetails == ['11','12']
-  }
-
-  @Test
-  void "test toString"() {
-    AuditEntity auditEntity =AuditEntity.getInstance('1','2','3','4','5','6','7', ['11', '12'])
-
-    assert auditEntity.toString() == AuditEntity.class.name + "(created:1, operation:2, text_args:3, text_return:5, state:7, methodDetails:[11, 12])"
-  }
+@Target(ElementType.METHOD)
+@Retention(RetentionPolicy.RUNTIME)
+@Inherited
+public @interface AuditAspectMethodDetails {
+  public String details();
 }
+

@@ -29,7 +29,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package se.su.it.svc.security;
+package se.su.it.svc.server.security;
 
 import org.eclipse.jetty.security.ServerAuthException;
 import org.eclipse.jetty.security.UserAuthentication;

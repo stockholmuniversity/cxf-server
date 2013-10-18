@@ -29,14 +29,14 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package se.su.it.svc.annotations;
+package se.su.it.svc.server.annotations;
 
 import java.lang.annotation.*;
 
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
 @Inherited
-public @interface AuditAspectMethodDetails {
+public @interface AuditMethodDetails {
   public String details();
 }
 

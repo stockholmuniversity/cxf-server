@@ -1,4 +1,4 @@
-package se.su.it.svc.audit;
+package se.su.it.svc.server.audit;
 
 import java.util.List;
 

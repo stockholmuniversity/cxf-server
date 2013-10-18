@@ -1,4 +1,4 @@
-package se.su.it.svc.annotations;
+package se.su.it.svc.server.annotations;
 
 import java.lang.annotation.*;
 

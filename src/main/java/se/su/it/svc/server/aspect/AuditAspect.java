@@ -1,4 +1,4 @@
-package se.su.it.svc.aspect;
+package se.su.it.svc.server.aspect;
 
 import org.apache.cxf.phase.PhaseInterceptorChain;
 import org.aspectj.lang.JoinPoint;
@@ -6,9 +6,9 @@ import org.aspectj.lang.annotation.AfterReturning;
 import org.aspectj.lang.annotation.AfterThrowing;
 import org.aspectj.lang.annotation.Before;
 import org.slf4j.LoggerFactory;
-import se.su.it.svc.annotations.AuditHideReturnValue;
-import se.su.it.svc.annotations.AuditMethodDetails;
-import se.su.it.svc.audit.AuditEntity;
+import se.su.it.svc.server.annotations.AuditHideReturnValue;
+import se.su.it.svc.server.annotations.AuditMethodDetails;
+import se.su.it.svc.server.audit.AuditEntity;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.ByteArrayOutputStream;

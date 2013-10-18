@@ -1,4 +1,4 @@
-package se.su.it.svc.security
+package se.su.it.svc.server.security
 
 import org.eclipse.jetty.security.UserAuthentication
 import org.eclipse.jetty.security.authentication.DeferredAuthentication

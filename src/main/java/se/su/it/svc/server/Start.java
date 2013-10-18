@@ -28,7 +28,7 @@
  * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  * POSSIBILITY OF SUCH DAMAGE.
  */
-package se.su.it.svc;
+package se.su.it.svc.server;
 
 import org.eclipse.jetty.server.Connector;
 import org.eclipse.jetty.server.Handler;
@@ -42,10 +42,9 @@ import org.eclipse.jetty.util.resource.Resource;
 import org.eclipse.jetty.webapp.WebAppContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import se.su.it.svc.filter.FilterHandler;
-import se.su.it.svc.security.SpnegoAndKrb5LoginService;
-import se.su.it.svc.security.SpocpRoleAuthorizor;
-import se.su.it.svc.security.SuCxfAuthenticator;
+import se.su.it.svc.server.filter.FilterHandler;
+import se.su.it.svc.server.security.SpnegoAndKrb5LoginService;
+import se.su.it.svc.server.security.SuCxfAuthenticator;
 
 import java.net.URL;
 import java.net.URLClassLoader;
@@ -132,6 +131,9 @@ public abstract class Start {
       }
 
       WebAppContext context = new WebAppContext();
+      context.addSystemClass("se.su.it.svc.server");
+      context.addSystemClass("org.spocp.jspocp");
+      context.addSystemClass("org.apache.cxf");
       context.setServer(server);
       context.setContextPath("/");
 

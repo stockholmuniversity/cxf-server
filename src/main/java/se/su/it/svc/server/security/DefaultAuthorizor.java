@@ -1,4 +1,4 @@
-package se.su.it.svc.security;
+package se.su.it.svc.server.security;
 
 public class DefaultAuthorizor implements Authorizor {
 

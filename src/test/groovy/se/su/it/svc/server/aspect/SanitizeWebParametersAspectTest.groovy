@@ -1,4 +1,4 @@
-package se.su.it.svc.aspect
+package se.su.it.svc.server.aspect
 
 import org.junit.Test
 

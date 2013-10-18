@@ -1,4 +1,4 @@
-package se.su.it.svc.aspect;
+package se.su.it.svc.server.aspect;
 
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;

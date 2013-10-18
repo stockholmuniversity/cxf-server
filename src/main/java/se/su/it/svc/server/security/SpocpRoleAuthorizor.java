@@ -29,16 +29,12 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package se.su.it.svc.security;
+package se.su.it.svc.server.security;
 
 import org.slf4j.LoggerFactory;
 import org.spocp.client.SPOCPConnection;
 import org.spocp.client.SPOCPConnectionFactoryImpl;
 import org.spocp.client.SPOCPResult;
-import se.su.it.svc.annotations.AuthzRole;
-
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Method;
 
 public class SpocpRoleAuthorizor implements Authorizor {
   public static final String SERVICE_PACKAGE = "se.su.it.svc.";

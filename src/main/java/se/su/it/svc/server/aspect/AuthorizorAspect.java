@@ -29,15 +29,15 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package se.su.it.svc.aspect;
+package se.su.it.svc.server.aspect;
 
 import org.apache.cxf.phase.PhaseInterceptorChain;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.slf4j.LoggerFactory;
-import se.su.it.svc.annotations.AuthzRole;
-import se.su.it.svc.security.Authorizor;
+import se.su.it.svc.server.annotations.AuthzRole;
+import se.su.it.svc.server.security.Authorizor;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -50,7 +50,7 @@ public class AuthorizorAspect {
 
   private Authorizor authorizor;
 
-  @Around("execution(* (@se.su.it.svc.annotations.AuthzRole *).*(..))")
+  @Around("execution(* (@se.su.it.svc.server.annotations.AuthzRole *).*(..))")
   public Object withClassAnnotation(ProceedingJoinPoint joinPoint) throws Throwable {
     Class target = joinPoint.getTarget().getClass();
     logger.debug("Intercepted method " + target.getName() + "." + joinPoint.getSignature().getName());
@@ -64,7 +64,7 @@ public class AuthorizorAspect {
     return handleAspect(joinPoint, role);
   }
 
-  @Around("execution(@se.su.it.svc.annotations.AuthzRole * *(..)) && @annotation(annotation)")
+  @Around("execution(@se.su.it.svc.server.annotations.AuthzRole * *(..)) && @annotation(annotation)")
   public Object withMethodAnnotation(ProceedingJoinPoint joinPoint, AuthzRole annotation) throws Throwable {
     logger.debug("Intercepted method " + joinPoint.getTarget().getClass().getName() + "." + joinPoint.getSignature().getName());
     String role = annotation.role();
@@ -97,8 +97,10 @@ public class AuthorizorAspect {
     logger.debug("Running Authorizor.checkRole for uid=" + uid + ", role=" + role);
 
     if (authorizor == null || authorizor.checkRole(uid, role)) {
+      logger.info("Authorizor.checkRole for uid=" + uid + ", role=" + role + ": OK");
       result = joinPoint.proceed();
     } else {
+      logger.info("Authorizor.checkRole for uid=" + uid + ", role=" + role + ": DENIED");
       HttpServletResponse httpServletResponse = (HttpServletResponse) PhaseInterceptorChain.getCurrentMessage().get("HTTP.RESPONSE");
       httpServletResponse.sendError(HttpServletResponse.SC_UNAUTHORIZED, "You do not have the the required role '" + role + "'");
     }

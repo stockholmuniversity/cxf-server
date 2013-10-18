@@ -1,4 +1,4 @@
-package se.su.it.svc.security
+package se.su.it.svc.server.security
 
 import org.junit.Before
 import org.junit.Test
@@ -12,7 +12,7 @@ import org.spocp.SPOCPTokenInputStream
 import org.spocp.client.SPOCPConnection
 import org.spocp.client.SPOCPConnectionFactoryImpl
 import org.spocp.client.SPOCPResult
-import se.su.it.svc.annotations.AuthzRole
+import se.su.it.svc.server.annotations.AuthzRole
 
 import static org.easymock.EasyMock.anyObject
 import static org.easymock.EasyMock.anyString
