@@ -163,7 +163,10 @@ public class AuditAspect {
     for (Object object : objects) {
       sb.append(object).append(", ");
     }
-    sb.replace(sb.lastIndexOf(","), sb.length(), "").append("]");
+    if (sb.lastIndexOf(",") > 0) {
+      sb.replace(sb.lastIndexOf(","), sb.length(), "");
+    }
+    sb.append("]");
 
     return sb.toString();
   }
