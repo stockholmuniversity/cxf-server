@@ -11,7 +11,7 @@ public class SanitizeWebParametersAspect {
   static final org.slf4j.Logger logger = LoggerFactory.getLogger(SanitizeWebParametersAspect.class);
 
   @Around("execution(* (@javax.jws.WebService *).*(..))")
-  Object runAspect(ProceedingJoinPoint joinPoint) throws Throwable {
+  public Object runAspect(ProceedingJoinPoint joinPoint) throws Throwable {
     Object[] args = joinPoint.getArgs();
 
     logger.debug("Intercepted method " + joinPoint.getTarget().getClass().getName() + "." + joinPoint.getSignature().getName());
