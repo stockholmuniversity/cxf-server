@@ -141,11 +141,6 @@ public abstract class Start {
       URL location = protectionDomain.getCodeSource().getLocation();
       context.setWar(location.toExternalForm());
 
-      // Add webapp to threads context classpath
-      ClassLoader ctcl = Thread.currentThread().getContextClassLoader();
-      URLClassLoader urlcl = new URLClassLoader(new URL[]{location}, ctcl);
-      Thread.currentThread().setContextClassLoader(urlcl);
-
       RequestLogHandler requestLogHandler = new RequestLogHandler();
       FilterHandler fh = new FilterHandler();
 
