@@ -209,10 +209,8 @@ public class AuditAspect {
         AuditMethodDetails annotation = method.getAnnotation(AuditMethodDetails.class);
         String details = annotation.details();
 
-        if (details != null) {
-          for(String s : details.split(",")) {
-            methodDetails.add(s.trim());
-          }
+        for(String s : details.split(",")) {
+          methodDetails.add(s.trim());
         }
       }
     }
