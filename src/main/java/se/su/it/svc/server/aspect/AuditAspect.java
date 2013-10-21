@@ -210,7 +210,9 @@ public class AuditAspect {
         String details = annotation.details();
 
         if (details != null) {
-          Collections.addAll(methodDetails, details.split(","));
+          for(String s : details.split(",")) {
+            methodDetails.add(s.trim());
+          }
         }
       }
     }
