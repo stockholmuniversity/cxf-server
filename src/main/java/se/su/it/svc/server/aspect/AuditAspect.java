@@ -4,6 +4,7 @@ import org.apache.cxf.phase.PhaseInterceptorChain;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.AfterReturning;
 import org.aspectj.lang.annotation.AfterThrowing;
+import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Before;
 import org.slf4j.LoggerFactory;
 import se.su.it.svc.server.annotations.AuditHideReturnValue;
@@ -20,6 +21,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
+@Aspect
 public class AuditAspect {
   private static final String STATE_INPROGRESS = "IN PROGRESS";
   private static final String STATE_SUCCESS = "SUCCESS";
@@ -27,7 +29,7 @@ public class AuditAspect {
   private static final String UNKNOWN = "<unknown>";
   private static final String HIDDEN_VALUE = "******";
 
-  static final org.slf4j.Logger logger = LoggerFactory.getLogger(AuthorizorAspect.class);
+  static final org.slf4j.Logger logger = LoggerFactory.getLogger(AuditAspect.class);
 
   @Before("execution(* (@javax.jws.WebService *).*(..))")
   public void auditBefore(JoinPoint joinPoint) throws Throwable {
