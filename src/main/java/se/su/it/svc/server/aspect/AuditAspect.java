@@ -47,19 +47,11 @@ public class AuditAspect {
       logger.warn("["+id+"] Could not get method for " + targetClass.getName() + "." + methodName);
     }
 
-    // Serialize the argument Object list into a ByteArray
-    ByteArrayOutputStream bsArgs = new ByteArrayOutputStream();
-    ObjectOutputStream outArgs = new ObjectOutputStream(bsArgs);
-    outArgs.writeObject(args);
-    outArgs.close();
-
     // Create an AuditEntity based on the gathered information
     AuditEntity ae = AuditEntity.getInstance(
             new Timestamp(new Date().getTime()).toString(),
             methodName,
             objectsToString(args),
-            new String(bsArgs.toByteArray()),
-            UNKNOWN,
             UNKNOWN,
             STATE_INPROGRESS,
             getMethodDetails(method)
@@ -90,25 +82,11 @@ public class AuditAspect {
       result = HIDDEN_VALUE;
     }
 
-    // Serialize the argument Object list into a ByteArray
-    ByteArrayOutputStream bsArgs = new ByteArrayOutputStream();
-    ObjectOutputStream outArgs = new ObjectOutputStream(bsArgs);
-    outArgs.writeObject(args);
-    outArgs.close();
-
-    // Serialize the Return object into a ByteArray
-    ByteArrayOutputStream bsRet = new ByteArrayOutputStream();
-    ObjectOutputStream outRet = new ObjectOutputStream(bsRet);
-    outRet.writeObject(result);
-    outRet.close();
-
     AuditEntity ae = AuditEntity.getInstance(
             new Timestamp(new Date().getTime()).toString(),
             methodName,
             objectsToString(args),
-            new String(bsArgs.toByteArray()),
             result != null ? result.toString() : null,
-            new String(bsRet.toByteArray()),
             STATE_SUCCESS,
             getMethodDetails(method)
     );
@@ -134,19 +112,11 @@ public class AuditAspect {
       logger.warn("["+id+"] Could not get method for " + targetClass.getName() + "." + methodName);
     }
 
-    // Serialize the argument Object list into a ByteArray
-    ByteArrayOutputStream bsArgs = new ByteArrayOutputStream();
-    ObjectOutputStream outArgs = new ObjectOutputStream(bsArgs);
-    outArgs.writeObject(args);
-    outArgs.close();
-
     AuditEntity ae = AuditEntity.getInstance(
             new Timestamp(new Date().getTime()).toString(),
             methodName,
             objectsToString(args),
-            new String(bsArgs.toByteArray()),
             throwable != null ? throwable.toString() : null,
-            UNKNOWN,
             STATE_EXCEPTION,
             getMethodDetails(method)
     );

@@ -7,9 +7,7 @@ public class AuditEntity {
   String created;
   String operation;
   String text_args;
-  String raw_args;
   String text_return;
-  String raw_return;
   String state;
   List<String> methodDetails;
 
@@ -18,9 +16,7 @@ public class AuditEntity {
   public static AuditEntity getInstance(String created,
                                         String operation,
                                         String text_args,
-                                        String raw_args,
                                         String text_return,
-                                        String raw_return,
                                         String state,
                                         List<String> methodDetails) {
 
@@ -28,9 +24,7 @@ public class AuditEntity {
     auditEntity.created       = created;
     auditEntity.operation     = operation;
     auditEntity.text_args     = text_args;
-    auditEntity.raw_args      = raw_args;
     auditEntity.text_return   = text_return;
-    auditEntity.raw_return    = raw_return;
     auditEntity.state         = state;
     auditEntity.methodDetails = methodDetails;
     return auditEntity;
