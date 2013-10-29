@@ -29,7 +29,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  */
 
-package se.su.it.svc.security;
+package se.su.it.svc.server.security;
 
 import org.eclipse.jetty.security.ServerAuthException;
 import org.eclipse.jetty.security.UserAuthentication;
@@ -45,13 +45,6 @@ import javax.servlet.http.HttpServletRequest;
 public class SuCxfAuthenticator extends SpnegoAuthenticator {
 
   static final org.slf4j.Logger logger = LoggerFactory.getLogger(SuCxfAuthenticator.class);
-
-  private boolean spocpEnabled = false;
-
-  public void setSpocpEnabled(boolean spocpEnabled) {
-    logger.info("SuCxfAuthenticator: Spocp is enabled: " + spocpEnabled);
-    this.spocpEnabled = spocpEnabled;
-  }
 
   /**
    * Validate the request.
@@ -81,7 +74,7 @@ public class SuCxfAuthenticator extends SpnegoAuthenticator {
     HttpServletRequest httpRequest = (HttpServletRequest) request;
     String infoMessage = "Authentication response to '" + httpRequest.getRequestURI() + "':";
 
-    if (spocpEnabled && authentication instanceof UserAuthentication) {
+    if (authentication instanceof UserAuthentication) {
       UserAuthentication userAuthentication = (UserAuthentication) authentication;
       UserIdentity identity = userAuthentication.getUserIdentity();
 
@@ -89,14 +82,6 @@ public class SuCxfAuthenticator extends SpnegoAuthenticator {
 
         String principalName = identity.getUserPrincipal().getName();
         infoMessage += " Negotiate: OK, user: " + principalName;
-
-        SpocpRoleAuthorizor authorizor = SpocpRoleAuthorizor.getInstance();
-        if (authorizor.checkRole(principalName, httpRequest.getRequestURI())) {
-          infoMessage += ", SPOCP: OK";
-        } else {
-          authentication = Authentication.UNAUTHENTICATED;
-          infoMessage += ", SPOCP: DENIED, " + authentication;
-        }
       } else {
         authentication = Authentication.UNAUTHENTICATED;
         infoMessage += " Negotiate: OK, user: UNKNOWN, " + authentication;

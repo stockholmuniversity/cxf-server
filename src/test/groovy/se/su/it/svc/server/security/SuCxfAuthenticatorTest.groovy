@@ -1,4 +1,4 @@
-package se.su.it.svc.security
+package se.su.it.svc.server.security
 
 import org.eclipse.jetty.security.UserAuthentication
 import org.eclipse.jetty.security.authentication.DeferredAuthentication
@@ -77,7 +77,6 @@ class SuCxfAuthenticatorTest {
     expect(mockAuthentication.getUserIdentity()).andReturn(null)
 
     def mock = createPartialMock(SuCxfAuthenticator, 'doValidateRequest', 'isWsdlRequest')
-    mock.spocpEnabled = true;
     expectPrivate(mock, 'doValidateRequest', mockRequest, mockResponse, false).andReturn(mockAuthentication)
     expectPrivate(mock, 'isWsdlRequest', anyObject()).andReturn(false)
     replayAll(mock, mockAuthentication, mockRequest)
@@ -99,39 +98,9 @@ class SuCxfAuthenticatorTest {
     expect(mockAuthentication.getUserIdentity()).andReturn(mockIdentity)
 
     def mock = createPartialMock(SuCxfAuthenticator, 'doValidateRequest', 'isWsdlRequest')
-    mock.spocpEnabled = true;
     expectPrivate(mock, 'doValidateRequest', mockRequest, mockResponse, false).andReturn(mockAuthentication)
     expectPrivate(mock, 'isWsdlRequest', anyObject()).andReturn(false)
     replayAll(mock, mockAuthentication, mockIdentity, mockRequest)
-
-    def ret = mock.validateRequest(mockRequest, mockResponse, false)
-
-    assert ret == Authentication.UNAUTHENTICATED
-  }
-
-  @Test
-  void "validateRequest returns unauthenticated if checkRole fails"() {
-    def mockAuthentication = createMock(UserAuthentication)
-    def mockIdentity       = createMock(UserIdentity)
-    def mockAuthorizor     = createMock(SpocpRoleAuthorizor)
-    def mockPrincipal      = createMock(Principal)
-    def mockRequest        = createMock(HttpServletRequest)
-    def mockResponse       = createMock(HttpServletResponse)
-
-    mockStatic(SpocpRoleAuthorizor)
-    expect(SpocpRoleAuthorizor.getInstance()).andReturn(mockAuthorizor)
-
-    expect(mockRequest.getRequestURI()).andReturn('').anyTimes()
-    expect(mockPrincipal.getName()).andReturn('')
-    expect(mockAuthorizor.checkRole(anyString(), anyString())).andReturn(false)
-    expect(mockIdentity.getUserPrincipal()).andReturn(mockPrincipal).anyTimes()
-    expect(mockAuthentication.getUserIdentity()).andReturn(mockIdentity)
-
-    def mock = createPartialMock(SuCxfAuthenticator, 'doValidateRequest', 'isWsdlRequest')
-    mock.spocpEnabled = true;
-    expectPrivate(mock, 'doValidateRequest', mockRequest, mockResponse, false).andReturn(mockAuthentication)
-    expectPrivate(mock, 'isWsdlRequest', anyObject()).andReturn(false)
-    replayAll(mock, mockAuthentication, mockIdentity, mockAuthorizor, mockPrincipal, mockRequest, SpocpRoleAuthorizor)
 
     def ret = mock.validateRequest(mockRequest, mockResponse, false)
 
