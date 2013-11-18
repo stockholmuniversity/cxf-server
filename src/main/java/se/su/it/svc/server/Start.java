@@ -32,7 +32,6 @@ package se.su.it.svc.server;
 
 import org.eclipse.jetty.server.Connector;
 import org.eclipse.jetty.server.Handler;
-import org.eclipse.jetty.server.NCSARequestLog;
 import org.eclipse.jetty.server.bio.SocketConnector;
 import org.eclipse.jetty.server.handler.DefaultHandler;
 import org.eclipse.jetty.server.handler.HandlerList;
@@ -43,14 +42,13 @@ import org.eclipse.jetty.webapp.WebAppContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import se.su.it.svc.server.filter.FilterHandler;
+import se.su.it.svc.server.log.CommonRequestLog;
 import se.su.it.svc.server.security.SpnegoAndKrb5LoginService;
 import se.su.it.svc.server.security.SuCxfAuthenticator;
 
 import java.net.URL;
-import java.net.URLClassLoader;
 import java.security.ProtectionDomain;
 import java.util.*;
-
 
 public abstract class Start {
   static final Logger logger = LoggerFactory.getLogger(Start.class);
@@ -150,11 +148,7 @@ public abstract class Start {
       server.setHandler(handlers);
 
       // Setup request logging
-      NCSARequestLog requestLog = new NCSARequestLog(logfile);
-      requestLog.setAppend(true);
-      requestLog.setExtended(false);
-      requestLog.setLogTimeZone("CET");
-      requestLogHandler.setRequestLog(requestLog);
+      requestLogHandler.setRequestLog(new CommonRequestLog());
 
       System.setProperty("java.security.krb5.realm", spnegoRealm);
       System.setProperty("javax.security.auth.useSubjectCredsOnly", "false");
