@@ -29,7 +29,7 @@ public class AuditAspect {
   static final org.slf4j.Logger logger = LoggerFactory.getLogger(AuditAspect.class);
 
   @Before("execution(* (@javax.jws.WebService *).*(..))")
-  public void auditBefore(JoinPoint joinPoint) throws Exception {
+  public void auditBefore(JoinPoint joinPoint) throws Throwable {
     String id = getId();
     Class targetClass = joinPoint.getTarget().getClass();
     String methodName = joinPoint.getSignature().getName();
@@ -60,7 +60,7 @@ public class AuditAspect {
   @AfterReturning(
           pointcut = "execution(* (@javax.jws.WebService *).*(..))",
           returning = "result")
-  public void auditAfterReturning(JoinPoint joinPoint, Object result) throws Exception {
+  public void auditAfterReturning(JoinPoint joinPoint, Object result) throws Throwable {
     String id = getId();
     Class targetClass = joinPoint.getTarget().getClass();
     String methodName = joinPoint.getSignature().getName();
@@ -94,7 +94,7 @@ public class AuditAspect {
   @AfterThrowing(
           pointcut = "execution(* (@javax.jws.WebService *).*(..))",
           throwing = "throwable")
-  public void auditAfterThrowing(JoinPoint joinPoint, Throwable throwable) throws Exception {
+  public void auditAfterThrowing(JoinPoint joinPoint, Throwable throwable) throws Throwable {
     String id = getId();
     Class targetClass = joinPoint.getTarget().getClass();
     String methodName = joinPoint.getSignature().getName();
