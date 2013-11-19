@@ -106,21 +106,9 @@ public class CommonRequestLog implements RequestLog {
     StringBuilder buf = new StringBuilder();
     long responseLength = response.getContentCount();
 
-    if (responseLength >= 0) {
-      if (responseLength > 99999)
-        buf.append(responseLength);
-      else {
-        if (responseLength > 9999)
-          buf.append((char) ('0' + ((responseLength / 10000) % 10)));
-        if (responseLength > 999)
-          buf.append((char) ('0' + ((responseLength / 1000) % 10)));
-        if (responseLength > 99)
-          buf.append((char) ('0' + ((responseLength / 100) % 10)));
-        if (responseLength > 9)
-          buf.append((char) ('0' + ((responseLength / 10) % 10)));
-        buf.append((char) ('0' + (responseLength) % 10));
-      }
-    } else
+    if (responseLength >= 0)
+      buf.append(responseLength);
+    else
       buf.append("-");
 
     return buf.toString();
