@@ -28,19 +28,6 @@ class CommonRequestLogTest {
   }
 
   @Test
-  void "getResponseLength returns the response length < 99999"() {
-    def response = createMock(Response)
-
-    expect(response.getContentCount()).andReturn(1234L)
-
-    replay(response)
-
-    def ret = new CommonRequestLog().getResponseLength(response)
-
-    assert ret == '1234'
-  }
-
-  @Test
   void "getResponseLength returns 0 for no length"() {
     def response = createMock(Response)
 
@@ -82,7 +69,7 @@ class CommonRequestLogTest {
   }
 
   @Test
-  void "getStatus returns 404 for status < 0"() {
+  void "getStatus returns 404 for status below 0"() {
     def request = createMock(Request)
     def async = createMock(AsyncContinuation)
     def response = createMock(Response)
