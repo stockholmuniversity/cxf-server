@@ -1,11 +1,46 @@
 package se.su.it.svc.server.log
 
+import com.sun.security.auth.UserPrincipal
+import org.eclipse.jetty.server.Authentication
+import org.eclipse.jetty.server.Request
+import org.eclipse.jetty.server.UserIdentity
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.powermock.modules.junit4.PowerMockRunner
 
+import static org.easymock.EasyMock.createMock
+import static org.easymock.EasyMock.expect
+import static org.powermock.api.easymock.PowerMock.replayAll
+
 @RunWith(PowerMockRunner)
 class CommonRequestLogTest {
+
+  @Test
+  void "getUserPrincipal returns - for no auth"() {
+    def request = createMock(Request)
+
+    def ret = new CommonRequestLog().getUserPrincipal(request)
+
+    assert ret == '-'
+  }
+
+  @Test
+  void "getUserPrincipal returns user principal "() {
+    def request = createMock(Request)
+    def auth = createMock(Authentication.User)
+    def userIdentity = createMock(UserIdentity)
+    def userprincipal = new UserPrincipal("FooBar")
+
+    expect(request.getAuthentication()).andReturn(auth)
+    expect(auth.getUserIdentity()).andReturn(userIdentity)
+    expect(userIdentity.getUserPrincipal()).andReturn(userprincipal)
+
+    replayAll(request, auth, userIdentity)
+
+    def ret = new CommonRequestLog().getUserPrincipal(request)
+
+    assert ret == 'FooBar'
+  }
 
   @Test
   void "start() sets started"() {
