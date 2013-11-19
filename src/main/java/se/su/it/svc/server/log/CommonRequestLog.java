@@ -58,11 +58,11 @@ public class CommonRequestLog implements RequestLog {
 
     buf.append(" - ");
 
-    Authentication authentication=request.getAuthentication();
+    Authentication authentication = request.getAuthentication();
     if (authentication instanceof Authentication.User)
-      buf.append(((Authentication.User)authentication).getUserIdentity().getUserPrincipal().getName());
+      buf.append(((Authentication.User) authentication).getUserIdentity().getUserPrincipal().getName());
     else
-      buf.append(" - ");
+      buf.append("-");
 
     buf.append(" [").append(request.getTimeStampBuffer().toString()).append("] ");
 
@@ -78,11 +78,10 @@ public class CommonRequestLog implements RequestLog {
       int status = response.getStatus();
       if (status <= 0)
         status = 404;
-      buf.append((char)('0' + ((status / 100) % 10)));
-      buf.append((char)('0' + ((status / 10) % 10)));
-      buf.append((char)('0' + (status % 10)));
-    }
-    else
+      buf.append((char) ('0' + ((status / 100) % 10)));
+      buf.append((char) ('0' + ((status / 10) % 10)));
+      buf.append((char) ('0' + (status % 10)));
+    } else
       buf.append("Async");
 
     long responseLength = response.getContentCount();
@@ -92,18 +91,17 @@ public class CommonRequestLog implements RequestLog {
         buf.append(responseLength);
       else {
         if (responseLength > 9999)
-          buf.append((char)('0' + ((responseLength / 10000) % 10)));
+          buf.append((char) ('0' + ((responseLength / 10000) % 10)));
         if (responseLength > 999)
-          buf.append((char)('0' + ((responseLength / 1000) % 10)));
+          buf.append((char) ('0' + ((responseLength / 1000) % 10)));
         if (responseLength > 99)
-          buf.append((char)('0' + ((responseLength / 100) % 10)));
+          buf.append((char) ('0' + ((responseLength / 100) % 10)));
         if (responseLength > 9)
-          buf.append((char)('0' + ((responseLength / 10) % 10)));
-        buf.append((char)('0' + (responseLength) % 10));
+          buf.append((char) ('0' + ((responseLength / 10) % 10)));
+        buf.append((char) ('0' + (responseLength) % 10));
       }
       buf.append(' ');
-    }
-    else
+    } else
       buf.append(" - ");
 
     log.info((Marker) null, buf.toString());
