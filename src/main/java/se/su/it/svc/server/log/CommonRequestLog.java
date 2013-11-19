@@ -71,7 +71,7 @@ public class CommonRequestLog implements RequestLog {
 
     buf.append(getStatus(request, response));
 
-    buf.append(getResponseLength(response));
+    buf.append(" ").append(getResponseLength(response)).append(" ");
 
     log.info(buf.toString());
   }
@@ -107,7 +107,6 @@ public class CommonRequestLog implements RequestLog {
     long responseLength = response.getContentCount();
 
     if (responseLength >= 0) {
-      buf.append(' ');
       if (responseLength > 99999)
         buf.append(responseLength);
       else {
@@ -121,9 +120,8 @@ public class CommonRequestLog implements RequestLog {
           buf.append((char) ('0' + ((responseLength / 10) % 10)));
         buf.append((char) ('0' + (responseLength) % 10));
       }
-      buf.append(' ');
     } else
-      buf.append(" - ");
+      buf.append("-");
 
     return buf.toString();
   }
