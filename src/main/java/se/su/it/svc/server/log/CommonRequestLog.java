@@ -58,11 +58,7 @@ public class CommonRequestLog implements RequestLog {
 
     buf.append(" - ");
 
-    Authentication authentication = request.getAuthentication();
-    if (authentication instanceof Authentication.User)
-      buf.append(((Authentication.User) authentication).getUserIdentity().getUserPrincipal().getName());
-    else
-      buf.append("-");
+    buf.append(getUserPrincipal(request));
 
     buf.append(" [").append(request.getTimeStampBuffer().toString()).append("] ");
 
@@ -74,6 +70,26 @@ public class CommonRequestLog implements RequestLog {
     buf.append(request.getProtocol());
     buf.append("\" ");
 
+    buf.append(getStatus(request, response));
+
+    buf.append(getResponseLength(response));
+
+    log.info((Marker) null, buf.toString());
+  }
+
+  protected String getUserPrincipal(Request request) {
+    String user = "-";
+
+    Authentication authentication = request.getAuthentication();
+    if (authentication instanceof Authentication.User)
+      user = ((Authentication.User) authentication).getUserIdentity().getUserPrincipal().getName();
+
+    return user;
+  }
+
+  protected String getStatus(Request request, Response response) {
+    StringBuilder buf = new StringBuilder();
+
     if (request.getAsyncContinuation().isInitial()) {
       int status = response.getStatus();
       if (status <= 0)
@@ -84,7 +100,13 @@ public class CommonRequestLog implements RequestLog {
     } else
       buf.append("Async");
 
+    return buf.toString();
+  }
+
+  protected String getResponseLength(Response response) {
+    StringBuilder buf = new StringBuilder();
     long responseLength = response.getContentCount();
+
     if (responseLength >= 0) {
       buf.append(' ');
       if (responseLength > 99999)
@@ -104,7 +126,7 @@ public class CommonRequestLog implements RequestLog {
     } else
       buf.append(" - ");
 
-    log.info((Marker) null, buf.toString());
+    return buf.toString();
   }
 
   @Override
