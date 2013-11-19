@@ -12,12 +12,9 @@ import se.su.it.svc.server.annotations.AuditMethodDetails;
 import se.su.it.svc.server.audit.AuditEntity;
 
 import javax.servlet.http.HttpServletRequest;
-import java.io.ByteArrayOutputStream;
-import java.io.ObjectOutputStream;
 import java.lang.reflect.Method;
 import java.sql.Timestamp;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
@@ -32,7 +29,7 @@ public class AuditAspect {
   static final org.slf4j.Logger logger = LoggerFactory.getLogger(AuditAspect.class);
 
   @Before("execution(* (@javax.jws.WebService *).*(..))")
-  public void auditBefore(JoinPoint joinPoint) throws Throwable {
+  public void auditBefore(JoinPoint joinPoint) throws Exception {
     String id = getId();
     Class targetClass = joinPoint.getTarget().getClass();
     String methodName = joinPoint.getSignature().getName();
@@ -63,7 +60,7 @@ public class AuditAspect {
   @AfterReturning(
           pointcut = "execution(* (@javax.jws.WebService *).*(..))",
           returning = "result")
-  public void auditAfterReturning(JoinPoint joinPoint, Object result) throws Throwable {
+  public void auditAfterReturning(JoinPoint joinPoint, Object result) throws Exception {
     String id = getId();
     Class targetClass = joinPoint.getTarget().getClass();
     String methodName = joinPoint.getSignature().getName();
@@ -97,7 +94,7 @@ public class AuditAspect {
   @AfterThrowing(
           pointcut = "execution(* (@javax.jws.WebService *).*(..))",
           throwing = "throwable")
-  public void auditAfterThrowing(JoinPoint joinPoint, Throwable throwable) throws Throwable {
+  public void auditAfterThrowing(JoinPoint joinPoint, Throwable throwable) throws Exception {
     String id = getId();
     Class targetClass = joinPoint.getTarget().getClass();
     String methodName = joinPoint.getSignature().getName();
