@@ -12,12 +12,9 @@ import se.su.it.svc.server.annotations.AuditMethodDetails;
 import se.su.it.svc.server.audit.AuditEntity;
 
 import javax.servlet.http.HttpServletRequest;
-import java.io.ByteArrayOutputStream;
-import java.io.ObjectOutputStream;
 import java.lang.reflect.Method;
 import java.sql.Timestamp;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 

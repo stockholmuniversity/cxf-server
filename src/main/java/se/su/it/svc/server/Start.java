@@ -53,19 +53,17 @@ import java.util.*;
 public abstract class Start {
   static final Logger logger = LoggerFactory.getLogger(Start.class);
 
-  public static final String DEFAULT_LOG_FILE_NAME_PROPERTY_KEY = "log.file";
-
   public static final String DEFAULT_SERVER_PREFIX = "cxf-server.";
 
-  public static final String PORT_PROPERTY_KEY                = DEFAULT_SERVER_PREFIX + "http.port";
-  public static final String BIND_ADDRESS_PROPERTY_KEY        = DEFAULT_SERVER_PREFIX + "bind.address";
-  public static final String SSL_ENABLED_PROPERTY_KEY         = DEFAULT_SERVER_PREFIX + "ssl.enabled";
-  public static final String SSL_KEYSTORE_PROPERTY_KEY        = DEFAULT_SERVER_PREFIX + "ssl.keystore";
-  public static final String SSL_PASSWORD_PROPERTY_KEY        = DEFAULT_SERVER_PREFIX + "ssl.password";
-  public static final String SPNEGO_CONFIG_FILE_PROPERTY_KEY  = DEFAULT_SERVER_PREFIX + "spnego.conf";
-  public static final String SPNEGO_REALM_PROPERTY_KEY        = DEFAULT_SERVER_PREFIX + "spnego.realm";
-  public static final String SPNEGO_KDC_PROPERTY_KEY          = DEFAULT_SERVER_PREFIX + "spnego.kdc";
-  public static final String SPNEGO_PROPERTIES_PROPERTY_KEY   = DEFAULT_SERVER_PREFIX + "spnego.properties";
+  public static final String PORT_PROPERTY_KEY = DEFAULT_SERVER_PREFIX + "http.port";
+  public static final String BIND_ADDRESS_PROPERTY_KEY = DEFAULT_SERVER_PREFIX + "bind.address";
+  public static final String SSL_ENABLED_PROPERTY_KEY = DEFAULT_SERVER_PREFIX + "ssl.enabled";
+  public static final String SSL_KEYSTORE_PROPERTY_KEY = DEFAULT_SERVER_PREFIX + "ssl.keystore";
+  public static final String SSL_PASSWORD_PROPERTY_KEY = DEFAULT_SERVER_PREFIX + "ssl.password";
+  public static final String SPNEGO_CONFIG_FILE_PROPERTY_KEY = DEFAULT_SERVER_PREFIX + "spnego.conf";
+  public static final String SPNEGO_REALM_PROPERTY_KEY = DEFAULT_SERVER_PREFIX + "spnego.realm";
+  public static final String SPNEGO_KDC_PROPERTY_KEY = DEFAULT_SERVER_PREFIX + "spnego.kdc";
+  public static final String SPNEGO_PROPERTIES_PROPERTY_KEY = DEFAULT_SERVER_PREFIX + "spnego.properties";
 
   private static final ArrayList<String> mandatoryProperties = new ArrayList<String>() {{
     add(PORT_PROPERTY_KEY);
@@ -87,8 +85,6 @@ public abstract class Start {
   public static synchronized void start(Properties config) {
 
     checkDefinedConfigFileProperties(config);
-
-    String logfile = config.getProperty(DEFAULT_LOG_FILE_NAME_PROPERTY_KEY);
 
     int httpPort = Integer.parseInt(config.getProperty(PORT_PROPERTY_KEY).trim());
     String jettyBindAddress = config.getProperty(BIND_ADDRESS_PROPERTY_KEY);
@@ -143,7 +139,7 @@ public abstract class Start {
       FilterHandler fh = new FilterHandler();
 
       HandlerList handlers = new HandlerList();
-      handlers.setHandlers(new Handler[] { requestLogHandler, fh, context, new DefaultHandler() });
+      handlers.setHandlers(new Handler[]{requestLogHandler, fh, context, new DefaultHandler()});
 
       server.setHandler(handlers);
 
