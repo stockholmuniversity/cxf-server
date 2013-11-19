@@ -38,7 +38,6 @@ import org.eclipse.jetty.server.RequestLog;
 import org.eclipse.jetty.server.Response;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.slf4j.Marker;
 
 public class CommonRequestLog implements RequestLog {
   static final Logger log = LoggerFactory.getLogger("RequestLog");
@@ -74,7 +73,7 @@ public class CommonRequestLog implements RequestLog {
 
     buf.append(getResponseLength(response));
 
-    log.info((Marker) null, buf.toString());
+    log.info(buf.toString());
   }
 
   protected String getUserPrincipal(Request request) {
