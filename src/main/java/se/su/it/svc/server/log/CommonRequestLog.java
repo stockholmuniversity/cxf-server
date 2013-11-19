@@ -40,7 +40,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class CommonRequestLog implements RequestLog {
-  static final Logger logger = LoggerFactory.getLogger("RequestLog");
+  private static Logger logger = LoggerFactory.getLogger("RequestLog");
 
   boolean started = false;
 
@@ -71,7 +71,7 @@ public class CommonRequestLog implements RequestLog {
 
     buf.append(getStatus(request, response));
 
-    buf.append(" ").append(getResponseLength(response)).append(" ");
+    buf.append(" ").append(getResponseLength(response));
 
     logger.info(buf.toString());
   }
