@@ -8,10 +8,63 @@ import org.powermock.modules.junit4.PowerMockRunner
 
 import static org.easymock.EasyMock.createMock
 import static org.easymock.EasyMock.expect
+import static org.powermock.api.easymock.PowerMock.replay
 import static org.powermock.api.easymock.PowerMock.replayAll
 
 @RunWith(PowerMockRunner)
 class CommonRequestLogTest {
+
+  @Test
+  void "getResponseLength returns the response length"() {
+    def response = createMock(Response)
+
+    expect(response.getContentCount()).andReturn(123456L)
+
+    replay(response)
+
+    def ret = new CommonRequestLog().getResponseLength(response)
+
+    assert ret == '123456'
+  }
+
+  @Test
+  void "getResponseLength returns the response length < 99999"() {
+    def response = createMock(Response)
+
+    expect(response.getContentCount()).andReturn(1234L)
+
+    replay(response)
+
+    def ret = new CommonRequestLog().getResponseLength(response)
+
+    assert ret == '1234'
+  }
+
+  @Test
+  void "getResponseLength returns 0 for no length"() {
+    def response = createMock(Response)
+
+    expect(response.getContentCount()).andReturn(0L)
+
+    replay(response)
+
+    def ret = new CommonRequestLog().getResponseLength(response)
+
+    assert ret == '0'
+  }
+
+  @Test
+  void "getResponseLength returns - for negative length"() {
+    def response = createMock(Response)
+
+    expect(response.getContentCount()).andReturn(-1L)
+
+    replay(response)
+
+    def ret = new CommonRequestLog().getResponseLength(response)
+
+    assert ret == '-'
+  }
 
   @Test
   void "getStatus returns Async for async requests"() {
