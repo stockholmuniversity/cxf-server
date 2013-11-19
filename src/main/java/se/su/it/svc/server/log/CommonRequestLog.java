@@ -40,7 +40,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class CommonRequestLog implements RequestLog {
-  static final Logger log = LoggerFactory.getLogger("RequestLog");
+  static final Logger logger = LoggerFactory.getLogger("RequestLog");
 
   boolean started = false;
 
@@ -73,7 +73,7 @@ public class CommonRequestLog implements RequestLog {
 
     buf.append(" ").append(getResponseLength(response)).append(" ");
 
-    log.info(buf.toString());
+    logger.info(buf.toString());
   }
 
   protected String getUserPrincipal(Request request) {
