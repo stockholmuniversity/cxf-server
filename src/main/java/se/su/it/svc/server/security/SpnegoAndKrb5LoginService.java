@@ -77,7 +77,7 @@ public final class SpnegoAndKrb5LoginService extends AbstractLifeCycle implement
   /**
    * @see org.eclipse.jetty.security.LoginService#getName()
    */
-  public final String getName() {
+  public String getName() {
     return name;
   }
 
@@ -88,7 +88,7 @@ public final class SpnegoAndKrb5LoginService extends AbstractLifeCycle implement
    * @param credentials a auth token String. Expect ClassCastException for anything else.
    * @return a UserIdentity if we succeed or null if we don't.
    */
-  public final UserIdentity login(String username, Object credentials) {
+  public UserIdentity login(String username, Object credentials) {
     byte[] authToken = B64Code.decode((String)credentials);
 
     try {
@@ -126,28 +126,28 @@ public final class SpnegoAndKrb5LoginService extends AbstractLifeCycle implement
    * @return always false
    * @see LoginService#validate(org.eclipse.jetty.server.UserIdentity)
    */
-  public final boolean validate(UserIdentity user) {
+  public boolean validate(UserIdentity user) {
     return false; // A previously created user identity is never valid.
   }
 
   /**
    * @see org.eclipse.jetty.security.LoginService#getIdentityService() ()
    */
-  public final IdentityService getIdentityService() {
+  public IdentityService getIdentityService() {
     return service;
   }
 
   /**
    * @see LoginService#setIdentityService(org.eclipse.jetty.security.IdentityService)
    */
-  public final void setIdentityService(IdentityService service) {
+  public void setIdentityService(IdentityService service) {
     this.service = service;
   }
 
   /**
    * Not implemented, not needed
    */
-  public final void logout(UserIdentity user) {
+  public void logout(UserIdentity user) {
     // No need to implement.
   }
 
