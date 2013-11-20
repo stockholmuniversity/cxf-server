@@ -53,7 +53,7 @@ public class FilterHandler extends AbstractHandler {
   /**
    *
    */
-  static final org.slf4j.Logger logger = LoggerFactory.getLogger(FilterHandler.class);
+  static final org.slf4j.Logger LOG = LoggerFactory.getLogger(FilterHandler.class);
 
   private final String statusText;
 
@@ -111,13 +111,13 @@ public class FilterHandler extends AbstractHandler {
           .append(builddate != null && builddate.length() > 0 ? builddate : NOINFO)
           .append("<br />");
     } catch (Exception e) {
-      logger.debug("Warning: Could not read version.properties file. ", e);
+      LOG.debug("Warning: Could not read version.properties file. ", e);
       sb.append(NOINFO);
     } finally {
       try {
         inputStream.close();
       } catch (IOException ioe) {
-        logger.error("Could not close stream when reading resource", ioe);
+        LOG.error("Could not close stream when reading resource", ioe);
       }
     }
     return sb.toString();

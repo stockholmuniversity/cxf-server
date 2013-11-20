@@ -40,7 +40,7 @@ public class SpocpRoleAuthorizor implements Authorizor {
 
   private static SpocpRoleAuthorizor instance = null;
 
-  static final org.slf4j.Logger logger = LoggerFactory.getLogger(SpocpRoleAuthorizor.class);
+  static final org.slf4j.Logger LOG = LoggerFactory.getLogger(SpocpRoleAuthorizor.class);
 
   private SPOCPConnectionFactoryImpl spocpConnectionFactory = null;
 
@@ -82,14 +82,14 @@ public class SpocpRoleAuthorizor implements Authorizor {
     boolean authorized;
 
     if (role == null) {
-      logger.debug("No SPOCP authentication for user=': " + uid + "', role='" + role + "'.");
+      LOG.debug("No SPOCP authentication for user=': " + uid + "', role='" + role + "'.");
       authorized = true;
     } else if (uid == null) {
-      logger.debug("No uid to check for role='" + role + "'.");
+      LOG.debug("No uid to check for role='" + role + "'.");
       authorized = false;
     } else {
       authorized = doSpocpCall(uid.replaceAll("[/@].*$", ""), role);
-      logger.debug("SPOCP result for " + uid + " in role " + role + ": " + authorized);
+      LOG.debug("SPOCP result for " + uid + " in role " + role + ": " + authorized);
     }
 
     return authorized;
@@ -114,7 +114,7 @@ public class SpocpRoleAuthorizor implements Authorizor {
         result = res.getResultCode() == SPOCPResult.SPOCP_SUCCESS;
       }
     } catch (Exception ex) {
-      logger.error("Could not check SPOCP Role: " + role, ex);
+      LOG.error("Could not check SPOCP Role: " + role, ex);
     } finally {
       try {
         if (spocp != null) {

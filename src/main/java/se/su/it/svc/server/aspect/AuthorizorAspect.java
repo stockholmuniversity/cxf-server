@@ -46,14 +46,14 @@ import java.lang.annotation.Annotation;
 @Aspect
 public class AuthorizorAspect {
 
-  static final org.slf4j.Logger logger = LoggerFactory.getLogger(AuthorizorAspect.class);
+  static final org.slf4j.Logger LOG = LoggerFactory.getLogger(AuthorizorAspect.class);
 
   private Authorizor authorizor;
 
   @Around("execution(* (@se.su.it.svc.server.annotations.AuthzRole *).*(..))")
   public Object withClassAnnotation(ProceedingJoinPoint joinPoint) throws Throwable {
     Class target = joinPoint.getTarget().getClass();
-    logger.debug("Intercepted method " + target.getName() + "." + joinPoint.getSignature().getName());
+    LOG.debug("Intercepted method " + target.getName() + "." + joinPoint.getSignature().getName());
 
     Annotation annotation = target.getAnnotation(AuthzRole.class);
     String role = null;
@@ -66,7 +66,7 @@ public class AuthorizorAspect {
 
   @Around("execution(@se.su.it.svc.server.annotations.AuthzRole * *(..)) && @annotation(annotation)")
   public Object withMethodAnnotation(ProceedingJoinPoint joinPoint, AuthzRole annotation) throws Throwable {
-    logger.debug("Intercepted method " + joinPoint.getTarget().getClass().getName() + "." + joinPoint.getSignature().getName());
+    LOG.debug("Intercepted method " + joinPoint.getTarget().getClass().getName() + "." + joinPoint.getSignature().getName());
     String role = annotation.role();
 
     return handleAspect(joinPoint, role);
@@ -94,13 +94,13 @@ public class AuthorizorAspect {
     HttpServletRequest httpServletRequest = (HttpServletRequest) PhaseInterceptorChain.getCurrentMessage().get("HTTP.REQUEST");
     String uid = httpServletRequest.getRemoteUser();
 
-    logger.debug("Running Authorizor.checkRole for uid=" + uid + ", role=" + role);
+    LOG.debug("Running Authorizor.checkRole for uid=" + uid + ", role=" + role);
 
     if (authorizor == null || authorizor.checkRole(uid, role)) {
-      logger.info("Authorizor.checkRole for uid=" + uid + ", role=" + role + ": OK");
+      LOG.info("Authorizor.checkRole for uid=" + uid + ", role=" + role + ": OK");
       result = joinPoint.proceed();
     } else {
-      logger.info("Authorizor.checkRole for uid=" + uid + ", role=" + role + ": DENIED");
+      LOG.info("Authorizor.checkRole for uid=" + uid + ", role=" + role + ": DENIED");
       HttpServletResponse httpServletResponse = (HttpServletResponse) PhaseInterceptorChain.getCurrentMessage().get("HTTP.RESPONSE");
       httpServletResponse.sendError(HttpServletResponse.SC_UNAUTHORIZED, "You do not have the the required role '" + role + "'");
     }

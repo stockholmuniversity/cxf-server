@@ -44,7 +44,7 @@ import javax.servlet.http.HttpServletRequest;
 
 public class SuCxfAuthenticator extends SpnegoAuthenticator {
 
-  static final org.slf4j.Logger logger = LoggerFactory.getLogger(SuCxfAuthenticator.class);
+  static final org.slf4j.Logger LOG = LoggerFactory.getLogger(SuCxfAuthenticator.class);
 
   /**
    * Validate the request.
@@ -66,7 +66,7 @@ public class SuCxfAuthenticator extends SpnegoAuthenticator {
     }
 
     if (isWsdlRequest(request)) {
-      logger.debug("WSDL request, sending deferred.");
+      LOG.debug("WSDL request, sending deferred.");
       return _deferred;
     }
 
@@ -91,7 +91,7 @@ public class SuCxfAuthenticator extends SpnegoAuthenticator {
     }
 
 
-    logger.info(infoMessage);
+    LOG.info(infoMessage);
     return authentication;
   }
 
