@@ -37,7 +37,6 @@ import org.spocp.client.SPOCPConnectionFactoryImpl;
 import org.spocp.client.SPOCPResult;
 
 public class SpocpRoleAuthorizor implements Authorizor {
-  public static final String SERVICE_PACKAGE = "se.su.it.svc.";
 
   private static SpocpRoleAuthorizor instance = null;
 
