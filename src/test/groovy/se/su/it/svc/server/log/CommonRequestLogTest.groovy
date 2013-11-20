@@ -11,7 +11,8 @@ import org.powermock.modules.junit4.PowerMockRunner
 import org.slf4j.Logger
 
 import static org.easymock.EasyMock.*
-import static org.powermock.api.easymock.PowerMock.*
+import static org.powermock.api.easymock.PowerMock.createPartialMock
+import static org.powermock.api.easymock.PowerMock.replayAll
 
 @RunWith(PowerMockRunner)
 class CommonRequestLogTest {
@@ -32,7 +33,6 @@ class CommonRequestLogTest {
     expect(request.getServerName()).andReturn("127.0.0.1")
     expect(request.getHeader(HttpHeaders.X_FORWARDED_FOR)).andReturn("1.2.3.4")
     expect(spy.getUserPrincipal(request)).andReturn("foobar")
-    //expect(buffer.toString()).andReturn("time")
     expect(request.getTimeStampBuffer()).andReturn(buffer)
     expect(request.getMethod()).andReturn("GET")
     expect(request.getUri()).andReturn(new HttpURI("/sercvices"))
