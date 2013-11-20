@@ -43,7 +43,7 @@ import org.slf4j.LoggerFactory;
 public class CommonRequestLog implements RequestLog {
   private static Logger logger = LoggerFactory.getLogger("RequestLog");
 
-  boolean started = false;
+  private boolean started = false;
 
   /**
    * @see RequestLog#log(org.eclipse.jetty.server.Request, org.eclipse.jetty.server.Response)
