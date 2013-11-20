@@ -75,15 +75,16 @@ public class AuditAspect {
       logger.warn("["+id+"] Could not get method for " + targetClass.getName() + "." + methodName);
     }
 
+    Object printedResult = result;
     if (method != null && method.isAnnotationPresent(AuditHideReturnValue.class)) {
-      result = HIDDEN_VALUE;
+      printedResult = HIDDEN_VALUE;
     }
 
     AuditEntity ae = AuditEntity.getInstance(
             new Timestamp(new Date().getTime()).toString(),
             methodName,
             objectsToString(args),
-            result != null ? result.toString() : null,
+            printedResult != null ? printedResult.toString() : null,
             STATE_SUCCESS,
             getMethodDetails(method)
     );
