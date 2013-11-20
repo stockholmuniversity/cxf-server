@@ -40,10 +40,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class CommonRequestLog implements RequestLog {
-  static final Logger log = LoggerFactory.getLogger("RequestLog");
+  private static Logger logger = LoggerFactory.getLogger("RequestLog");
 
   boolean started = false;
 
+  /**
+   * @see RequestLog#log(org.eclipse.jetty.server.Request, org.eclipse.jetty.server.Response)
+   */
   @Override
   public void log(Request request, Response response) {
     StringBuilder buf = new StringBuilder();
@@ -71,11 +74,17 @@ public class CommonRequestLog implements RequestLog {
 
     buf.append(getStatus(request, response));
 
-    buf.append(getResponseLength(response));
+    buf.append(" ").append(getResponseLength(response));
 
-    log.info(buf.toString());
+    logger.info(buf.toString());
   }
 
+  /**
+   * Get the user principal name.
+   *
+   * @param request the request from which to get the principal.
+   * @return the principal name or '-' if none can be found.
+   */
   protected String getUserPrincipal(Request request) {
     String user = "-";
 
@@ -86,6 +95,13 @@ public class CommonRequestLog implements RequestLog {
     return user;
   }
 
+  /**
+   * Get the response status
+   *
+   * @param request the request.
+   * @param response the response.
+   * @return the status code ex. 200, or 'Async'.
+   */
   protected String getStatus(Request request, Response response) {
     StringBuilder buf = new StringBuilder();
 
@@ -102,77 +118,99 @@ public class CommonRequestLog implements RequestLog {
     return buf.toString();
   }
 
+  /**
+   * Get the response length.
+   *
+   * @param response the response.
+   * @return the response length, or '-'
+   */
   protected String getResponseLength(Response response) {
     StringBuilder buf = new StringBuilder();
     long responseLength = response.getContentCount();
 
-    if (responseLength >= 0) {
-      buf.append(' ');
-      if (responseLength > 99999)
-        buf.append(responseLength);
-      else {
-        if (responseLength > 9999)
-          buf.append((char) ('0' + ((responseLength / 10000) % 10)));
-        if (responseLength > 999)
-          buf.append((char) ('0' + ((responseLength / 1000) % 10)));
-        if (responseLength > 99)
-          buf.append((char) ('0' + ((responseLength / 100) % 10)));
-        if (responseLength > 9)
-          buf.append((char) ('0' + ((responseLength / 10) % 10)));
-        buf.append((char) ('0' + (responseLength) % 10));
-      }
-      buf.append(' ');
-    } else
-      buf.append(" - ");
+    if (responseLength >= 0)
+      buf.append(responseLength);
+    else
+      buf.append("-");
 
     return buf.toString();
   }
 
+  /**
+   * @see org.eclipse.jetty.util.component.LifeCycle#start()
+   */
   @Override
   public void start() throws Exception {
     started = true;
   }
 
+  /**
+   * @see org.eclipse.jetty.util.component.LifeCycle#stop()
+   */
   @Override
   public void stop() throws Exception {
     started = false;
   }
 
+  /**
+   * @see org.eclipse.jetty.util.component.LifeCycle#isRunning()
+   */
   @Override
   public boolean isRunning() {
     return started;
   }
 
+  /**
+   * @see org.eclipse.jetty.util.component.LifeCycle#isStarted()
+   */
   @Override
   public boolean isStarted() {
     return started;
   }
 
+  /**
+   * @see org.eclipse.jetty.util.component.LifeCycle#isStarting()
+   */
   @Override
   public boolean isStarting() {
     return false;
   }
 
+  /**
+   * @see org.eclipse.jetty.util.component.LifeCycle#isStopping()
+   */
   @Override
   public boolean isStopping() {
     return false;
   }
 
+  /**
+   * @see org.eclipse.jetty.util.component.LifeCycle#isStopped()
+   */
   @Override
   public boolean isStopped() {
     return !started;
   }
 
+  /**
+   * @see org.eclipse.jetty.util.component.LifeCycle#isFailed()
+   */
   @Override
   public boolean isFailed() {
     return false;
   }
 
+  /**
+   * @see org.eclipse.jetty.util.component.LifeCycle#addLifeCycleListener(org.eclipse.jetty.util.component.LifeCycle.Listener)
+   */
   @Override
   public void addLifeCycleListener(Listener listener) {
     // Not yet implemented
   }
 
+  /**
+   * @see org.eclipse.jetty.util.component.LifeCycle#removeLifeCycleListener(org.eclipse.jetty.util.component.LifeCycle.Listener)
+   */
   @Override
   public void removeLifeCycleListener(Listener listener) {
     // Not yet implemented
