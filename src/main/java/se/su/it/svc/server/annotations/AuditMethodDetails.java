@@ -37,6 +37,6 @@ import java.lang.annotation.*;
 @Retention(RetentionPolicy.RUNTIME)
 @Inherited
 public @interface AuditMethodDetails {
-  public String details();
+  String details();
 }
 

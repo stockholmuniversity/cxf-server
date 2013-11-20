@@ -11,7 +11,7 @@ import org.powermock.modules.junit4.PowerMockRunner
 import org.slf4j.Logger
 
 import static org.easymock.EasyMock.*
-import static org.powermock.api.easymock.PowerMock.createPartialMock
+import static org.powermock.api.easymock.PowerMock.createPartialMockForAllMethodsExcept
 import static org.powermock.api.easymock.PowerMock.replayAll
 
 @RunWith(PowerMockRunner)
@@ -21,14 +21,10 @@ class CommonRequestLogTest {
   void "log"() {
     def request = createMock(Request)
     def response = createMock(Response)
-    def async = createMock(AsyncContinuation)
-    def spy = createPartialMock(
-            CommonRequestLog,
-            "getUserPrincipal",
-            [Request] as Class[])
+    def spy = createPartialMockForAllMethodsExcept(
+            CommonRequestLog, "log", Request, Response)
     def buffer = [toString: {"time"}] as Buffer
     def logger = createMock(Logger)
-
 
     expect(request.getServerName()).andReturn("127.0.0.1")
     expect(request.getHeader(HttpHeaders.X_FORWARDED_FOR)).andReturn("1.2.3.4")
@@ -37,13 +33,11 @@ class CommonRequestLogTest {
     expect(request.getMethod()).andReturn("GET")
     expect(request.getUri()).andReturn(new HttpURI("/sercvices"))
     expect(request.getProtocol()).andReturn("HTTP/1.1")
-    expect(request.getAsyncContinuation()).andReturn(async)
-    expect(async.isInitial()).andReturn(true)
-    expect(response.getStatus()).andReturn(200)
-    expect(response.getContentCount()).andReturn(0)
+    expect(spy.getStatus(request, response)).andReturn("200")
+    expect(spy.getResponseLength(response)).andReturn("0")
 
     expect(logger.info('127.0.0.1 1.2.3.4 - foobar [time] "GET /sercvices HTTP/1.1" 200 0'))
-    replayAll(request, response, logger, spy, async)
+    replayAll(request, response, logger, spy)
 
     CommonRequestLog.logger = logger
 

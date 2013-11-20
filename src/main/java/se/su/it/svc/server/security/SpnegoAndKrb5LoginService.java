@@ -57,14 +57,14 @@ public final class SpnegoAndKrb5LoginService extends AbstractLifeCycle implement
    */
   public static final String OID_MECH_SPNEGO = "1.3.6.1.5.5.2";
 
-  static final org.slf4j.Logger logger = LoggerFactory.getLogger(SpnegoAndKrb5LoginService.class);
+  static final org.slf4j.Logger LOG = LoggerFactory.getLogger(SpnegoAndKrb5LoginService.class);
 
 
   private String name;
   private IdentityService service;
   private GSSContext gssContext;
 
-  public SpnegoAndKrb5LoginService( String name, String targetName ) throws IllegalStateException, GSSException {
+  public SpnegoAndKrb5LoginService( String name, String targetName ) throws GSSException {
     this.name = name;
 
     gssContext = setupContext(targetName);
@@ -77,7 +77,7 @@ public final class SpnegoAndKrb5LoginService extends AbstractLifeCycle implement
   /**
    * @see org.eclipse.jetty.security.LoginService#getName()
    */
-  public final String getName() {
+  public String getName() {
     return name;
   }
 
@@ -88,7 +88,7 @@ public final class SpnegoAndKrb5LoginService extends AbstractLifeCycle implement
    * @param credentials a auth token String. Expect ClassCastException for anything else.
    * @return a UserIdentity if we succeed or null if we don't.
    */
-  public final UserIdentity login(String username, Object credentials) {
+  public UserIdentity login(String username, Object credentials) {
     byte[] authToken = B64Code.decode((String)credentials);
 
     try {
@@ -100,10 +100,10 @@ public final class SpnegoAndKrb5LoginService extends AbstractLifeCycle implement
       String clientName = srcName.toString();
       String role = clientName.substring(clientName.indexOf('@') + 1);
 
-      logger.debug("GSS: Established a security context");
-      logger.debug("GSS: Client Principal is: " + srcName);
-      logger.debug("GSS: Server Principal is: " + gssContext.getTargName());
-      logger.debug("GSS: Client Default Role: " + role);
+      LOG.debug("GSS: Established a security context");
+      LOG.debug("GSS: Client Principal is: " + srcName);
+      LOG.debug("GSS: Server Principal is: " + gssContext.getTargName());
+      LOG.debug("GSS: Client Default Role: " + role);
 
       SpnegoUserPrincipal user = new SpnegoUserPrincipal(clientName, authToken);
       Subject subject = new Subject();
@@ -112,8 +112,8 @@ public final class SpnegoAndKrb5LoginService extends AbstractLifeCycle implement
       return service.newUserIdentity(subject, user, new String[]{role});
     } catch (GSSException gsse) {
       // Can't throw exception forward due to interface implementation
-      logger.info("GSS: Failed while validating credentials: " + gsse.getMessage());
-      logger.debug("", gsse);
+      LOG.info("GSS: Failed while validating credentials: " + gsse.getMessage());
+      LOG.debug("", gsse);
     }
 
     return null;
@@ -126,28 +126,28 @@ public final class SpnegoAndKrb5LoginService extends AbstractLifeCycle implement
    * @return always false
    * @see LoginService#validate(org.eclipse.jetty.server.UserIdentity)
    */
-  public final boolean validate(UserIdentity user) {
+  public boolean validate(UserIdentity user) {
     return false; // A previously created user identity is never valid.
   }
 
   /**
    * @see org.eclipse.jetty.security.LoginService#getIdentityService() ()
    */
-  public final IdentityService getIdentityService() {
+  public IdentityService getIdentityService() {
     return service;
   }
 
   /**
    * @see LoginService#setIdentityService(org.eclipse.jetty.security.IdentityService)
    */
-  public final void setIdentityService(IdentityService service) {
+  public void setIdentityService(IdentityService service) {
     this.service = service;
   }
 
   /**
    * Not implemented, not needed
    */
-  public final void logout(UserIdentity user) {
+  public void logout(UserIdentity user) {
     // No need to implement.
   }
 

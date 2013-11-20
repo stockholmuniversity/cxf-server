@@ -32,6 +32,7 @@
 package se.su.it.svc.server.log;
 
 import org.eclipse.jetty.http.HttpHeaders;
+import org.eclipse.jetty.http.HttpStatus;
 import org.eclipse.jetty.server.Authentication;
 import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.RequestLog;
@@ -42,7 +43,7 @@ import org.slf4j.LoggerFactory;
 public class CommonRequestLog implements RequestLog {
   private static Logger logger = LoggerFactory.getLogger("RequestLog");
 
-  boolean started = false;
+  private boolean started = false;
 
   /**
    * @see RequestLog#log(org.eclipse.jetty.server.Request, org.eclipse.jetty.server.Response)
@@ -108,7 +109,7 @@ public class CommonRequestLog implements RequestLog {
     if (request.getAsyncContinuation().isInitial()) {
       int status = response.getStatus();
       if (status <= 0)
-        status = 404;
+        status = HttpStatus.NOT_FOUND_404;
       buf.append((char) ('0' + ((status / 100) % 10)));
       buf.append((char) ('0' + ((status / 10) % 10)));
       buf.append((char) ('0' + (status % 10)));
