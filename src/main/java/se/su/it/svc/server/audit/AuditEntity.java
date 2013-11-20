@@ -4,12 +4,12 @@ import java.util.List;
 
 public class AuditEntity {
 
-  String created;
-  String operation;
-  String text_args;
-  String text_return;
-  String state;
-  List<String> methodDetails;
+  private String created;
+  private String operation;
+  private String text_args;
+  private String text_return;
+  private String state;
+  private List<String> methodDetails;
 
   private AuditEntity() {}
 
