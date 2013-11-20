@@ -64,7 +64,7 @@ public final class SpnegoAndKrb5LoginService extends AbstractLifeCycle implement
   private IdentityService service;
   private GSSContext gssContext;
 
-  public SpnegoAndKrb5LoginService( String name, String targetName ) throws IllegalStateException, GSSException {
+  public SpnegoAndKrb5LoginService( String name, String targetName ) throws GSSException {
     this.name = name;
 
     gssContext = setupContext(targetName);
