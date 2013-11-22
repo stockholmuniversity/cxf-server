@@ -40,8 +40,8 @@ class AuditEntityTest {
 
     assert auditEntity.created       == '1'
     assert auditEntity.operation     == '2'
-    assert auditEntity.text_args     == '3'
-    assert auditEntity.text_return   == '4'
+    assert auditEntity.textArgs     == '3'
+    assert auditEntity.textReturn   == '4'
     assert auditEntity.state         == '5'
     assert auditEntity.methodDetails == ['6','7']
   }

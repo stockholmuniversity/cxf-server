@@ -8,18 +8,18 @@ import org.slf4j.LoggerFactory;
 @Aspect
 public class SanitizeWebParametersAspect {
 
-  static final org.slf4j.Logger logger = LoggerFactory.getLogger(SanitizeWebParametersAspect.class);
+  static final org.slf4j.Logger LOG = LoggerFactory.getLogger(SanitizeWebParametersAspect.class);
 
   @Around("execution(* (@javax.jws.WebService *).*(..))")
   public Object runAspect(ProceedingJoinPoint joinPoint) throws Throwable {
     Object[] args = joinPoint.getArgs();
 
-    logger.debug("Intercepted method " + joinPoint.getTarget().getClass().getName() + "." + joinPoint.getSignature().getName());
+    LOG.debug("Intercepted method " + joinPoint.getTarget().getClass().getName() + "." + joinPoint.getSignature().getName());
 
     try {
       args = washArgs(args);
     } catch (Exception ex) {
-      logger.error("Failed to sanitize arguments for method ${method.name}, attributes supplied were: ${args.join(", ")}", ex);
+      LOG.error("Failed to sanitize arguments for method ${method.name}, attributes supplied were: ${args.join(", ")}", ex);
     }
 
     return joinPoint.proceed(args);

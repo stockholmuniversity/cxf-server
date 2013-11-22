@@ -51,7 +51,7 @@ import java.security.ProtectionDomain;
 import java.util.*;
 
 public abstract class Start {
-  static final Logger logger = LoggerFactory.getLogger(Start.class);
+  static final Logger LOG = LoggerFactory.getLogger(Start.class);
 
   public static final String DEFAULT_SERVER_PREFIX = "cxf-server.";
 
@@ -65,7 +65,7 @@ public abstract class Start {
   public static final String SPNEGO_KDC_PROPERTY_KEY = DEFAULT_SERVER_PREFIX + "spnego.kdc";
   public static final String SPNEGO_PROPERTIES_PROPERTY_KEY = DEFAULT_SERVER_PREFIX + "spnego.properties";
 
-  private static final ArrayList<String> mandatoryProperties = new ArrayList<String>() {{
+  private static final ArrayList<String> MANDATORY_PROPERTIES = new ArrayList<String>() {{
     add(PORT_PROPERTY_KEY);
     add(BIND_ADDRESS_PROPERTY_KEY);
     add(SSL_ENABLED_PROPERTY_KEY);
@@ -75,7 +75,7 @@ public abstract class Start {
     add(SPNEGO_PROPERTIES_PROPERTY_KEY);
   }};
 
-  private static final Map<String, List<String>> mandatoryDependencies = new HashMap<String, List<String>>() {{
+  private static final Map<String, List<String>> MANDATORY_DEPENDENCIES = new HashMap<String, List<String>>() {{
     put(SSL_ENABLED_PROPERTY_KEY, new LinkedList<String>() {{
       add(SSL_KEYSTORE_PROPERTY_KEY);
       add(SSL_PASSWORD_PROPERTY_KEY);
@@ -162,19 +162,19 @@ public abstract class Start {
       context.getSecurityHandler().setAuthenticator(authenticator);
 
       server.start();
-      logger.info("Server ready...");
+      LOG.info("Server ready...");
       server.join();
 
     } catch (Exception ex) {
-      logger.error("Server startup failed.", ex);
+      LOG.error("Server startup failed.", ex);
     }
   }
 
   private static boolean checkDefinedConfigFileProperties(Properties properties) {
     List<String> notFoundList = new ArrayList<String>();
 
-    for (String mandatoryProperty : mandatoryProperties) {
-      if (mandatoryDependencies.containsKey(mandatoryProperty)) {
+    for (String mandatoryProperty : MANDATORY_PROPERTIES) {
+      if (MANDATORY_DEPENDENCIES.containsKey(mandatoryProperty)) {
 
         /** See if the property is actually in the config file. */
         if (properties.getProperty(mandatoryProperty) == null) {
@@ -187,7 +187,7 @@ public abstract class Start {
 
         /** If the feature is enabled we check if the mandatory dependencies for the features are set */
         if (functionEnabled) {
-          List<String> dependencies = mandatoryDependencies.get(mandatoryProperty);
+          List<String> dependencies = MANDATORY_DEPENDENCIES.get(mandatoryProperty);
           for (String dep : dependencies) {
             if (properties.get(dep) == null) {
               notFoundList.add(dep);
@@ -206,11 +206,11 @@ public abstract class Start {
     }
 
     for (String notFound : notFoundList) {
-      logger.error("Property <" + notFound + ">   ...not found");
+      LOG.error("Property <" + notFound + ">   ...not found");
     }
 
     // End check for mandatory properties
-    logger.error("Quitting because mandatory properties was missing...");
+    LOG.error("Quitting because mandatory properties was missing...");
     return false;  //To change body of created methods use File | Settings | File Templates.
   }
 

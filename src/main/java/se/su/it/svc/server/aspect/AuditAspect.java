@@ -26,7 +26,7 @@ public class AuditAspect {
   private static final String UNKNOWN = "<unknown>";
   private static final String HIDDEN_VALUE = "******";
 
-  static final org.slf4j.Logger logger = LoggerFactory.getLogger(AuditAspect.class);
+  static final org.slf4j.Logger LOG = LoggerFactory.getLogger(AuditAspect.class);
 
   @Before("execution(* (@javax.jws.WebService *).*(..))")
   public void auditBefore(JoinPoint joinPoint) throws Throwable {
@@ -35,13 +35,13 @@ public class AuditAspect {
     String methodName = joinPoint.getSignature().getName();
     Object[] args = joinPoint.getArgs();
 
-    logger.info("["+id+"] Before: " + targetClass.getName() + "." + methodName + " with " + args.length + "params");
+    LOG.info("[" + id + "] Before: " + targetClass.getName() + "." + methodName + " with " + args.length + "params");
 
     Method method = null;
     try {
        method = getMethod(targetClass, methodName, args);
     } catch (NoSuchMethodException e) {
-      logger.warn("["+id+"] Could not get method for " + targetClass.getName() + "." + methodName);
+      LOG.warn("[" + id + "] Could not get method for " + targetClass.getName() + "." + methodName);
     }
 
     // Create an AuditEntity based on the gathered information
@@ -54,7 +54,7 @@ public class AuditAspect {
             getMethodDetails(method)
     );
 
-    logger.info("["+id+"] Received: "+ ae);
+    LOG.info("[" + id + "] Received: " + ae);
   }
 
   @AfterReturning(
@@ -66,29 +66,30 @@ public class AuditAspect {
     String methodName = joinPoint.getSignature().getName();
     Object[] args = joinPoint.getArgs();
 
-    logger.info("["+id+"] After: " + targetClass.getName() + "." + methodName + " with " + args.length + "params");
+    LOG.info("[" + id + "] After: " + targetClass.getName() + "." + methodName + " with " + args.length + "params");
 
     Method method = null;
     try {
       method = getMethod(targetClass, methodName, args);
     } catch (NoSuchMethodException e) {
-      logger.warn("["+id+"] Could not get method for " + targetClass.getName() + "." + methodName);
+      LOG.warn("[" + id + "] Could not get method for " + targetClass.getName() + "." + methodName);
     }
 
+    Object printedResult = result;
     if (method != null && method.isAnnotationPresent(AuditHideReturnValue.class)) {
-      result = HIDDEN_VALUE;
+      printedResult = HIDDEN_VALUE;
     }
 
     AuditEntity ae = AuditEntity.getInstance(
             new Timestamp(new Date().getTime()).toString(),
             methodName,
             objectsToString(args),
-            result != null ? result.toString() : null,
+            printedResult != null ? printedResult.toString() : null,
             STATE_SUCCESS,
             getMethodDetails(method)
     );
 
-    logger.info("["+id+"] Returned: " + ae);
+    LOG.info("[" + id + "] Returned: " + ae);
   }
 
   @AfterThrowing(
@@ -100,13 +101,13 @@ public class AuditAspect {
     String methodName = joinPoint.getSignature().getName();
     Object[] args = joinPoint.getArgs();
 
-    logger.info("["+id+"] After exception: " + targetClass.getName() + "." + methodName + " with " + args.length + "params");
+    LOG.info("[" + id + "] After exception: " + targetClass.getName() + "." + methodName + " with " + args.length + "params");
 
     Method method = null;
     try {
       method = getMethod(targetClass, methodName, args);
     } catch (NoSuchMethodException e) {
-      logger.warn("["+id+"] Could not get method for " + targetClass.getName() + "." + methodName);
+      LOG.warn("[" + id + "] Could not get method for " + targetClass.getName() + "." + methodName);
     }
 
     AuditEntity ae = AuditEntity.getInstance(
@@ -118,7 +119,7 @@ public class AuditAspect {
             getMethodDetails(method)
     );
 
-    logger.info("["+id+"] Exception: " + ae);
+    LOG.info("[" + id + "] Exception: " + ae);
   }
 
   protected String objectsToString(Object[] objects) {
@@ -147,7 +148,7 @@ public class AuditAspect {
       HttpServletRequest request = (HttpServletRequest) PhaseInterceptorChain.getCurrentMessage().get("HTTP.REQUEST");
       id = request.getSession().getId();
     } catch (Exception ex) {
-      logger.debug("Failed to get id from session", ex);
+      LOG.debug("Failed to get id from session", ex);
     }
 
     return id;
