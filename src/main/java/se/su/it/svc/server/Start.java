@@ -37,7 +37,6 @@ import org.eclipse.jetty.server.handler.DefaultHandler;
 import org.eclipse.jetty.server.handler.HandlerList;
 import org.eclipse.jetty.server.handler.RequestLogHandler;
 import org.eclipse.jetty.server.ssl.SslSocketConnector;
-import org.eclipse.jetty.util.resource.Resource;
 import org.eclipse.jetty.webapp.WebAppContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -46,6 +45,7 @@ import se.su.it.svc.server.log.CommonRequestLog;
 import se.su.it.svc.server.security.SpnegoAndKrb5LoginService;
 import se.su.it.svc.server.security.SuCxfAuthenticator;
 
+import java.io.File;
 import java.net.URL;
 import java.security.ProtectionDomain;
 import java.util.*;
@@ -63,7 +63,7 @@ public abstract class Start {
   public static final String SPNEGO_CONFIG_FILE_PROPERTY_KEY = DEFAULT_SERVER_PREFIX + "spnego.conf";
   public static final String SPNEGO_REALM_PROPERTY_KEY = DEFAULT_SERVER_PREFIX + "spnego.realm";
   public static final String SPNEGO_KDC_PROPERTY_KEY = DEFAULT_SERVER_PREFIX + "spnego.kdc";
-  public static final String SPNEGO_PROPERTIES_PROPERTY_KEY = DEFAULT_SERVER_PREFIX + "spnego.properties";
+  public static final String SPNEGO_TARGET_NAME_PROPERTY_KEY = DEFAULT_SERVER_PREFIX + "spnego.targetName";
 
   private static final ArrayList<String> MANDATORY_PROPERTIES = new ArrayList<String>() {{
     add(PORT_PROPERTY_KEY);
@@ -72,7 +72,7 @@ public abstract class Start {
     add(SPNEGO_CONFIG_FILE_PROPERTY_KEY);
     add(SPNEGO_REALM_PROPERTY_KEY);
     add(SPNEGO_KDC_PROPERTY_KEY);
-    add(SPNEGO_PROPERTIES_PROPERTY_KEY);
+    add(SPNEGO_TARGET_NAME_PROPERTY_KEY);
   }};
 
   private static final Map<String, List<String>> MANDATORY_DEPENDENCIES = new HashMap<String, List<String>>() {{
@@ -98,7 +98,6 @@ public abstract class Start {
     String spnegoConfigFileName = config.getProperty(SPNEGO_CONFIG_FILE_PROPERTY_KEY);
     String spnegoRealm = config.getProperty(SPNEGO_REALM_PROPERTY_KEY);
     String spnegoKdc = config.getProperty(SPNEGO_KDC_PROPERTY_KEY);
-    String spnegoPropertiesFileName = config.getProperty(SPNEGO_PROPERTIES_PROPERTY_KEY);
 
     try {
 
@@ -146,16 +145,17 @@ public abstract class Start {
       // Setup request logging
       requestLogHandler.setRequestLog(new CommonRequestLog());
 
+      // Setup spnego conf
+      if(! new File(spnegoConfigFileName).exists()) {
+        LOG.error("No login.config file found at " + spnegoConfigFileName + ".");
+        throw new IllegalStateException("No login.config found at " + spnegoConfigFileName + ". Can't configure SPNEGO.");
+      }
       System.setProperty("java.security.krb5.realm", spnegoRealm);
       System.setProperty("javax.security.auth.useSubjectCredsOnly", "false");
       System.setProperty("java.security.auth.login.config", "=file:" + spnegoConfigFileName);
       System.setProperty("java.security.krb5.kdc", spnegoKdc);
 
-      Properties spnegoProperties = new Properties();
-      Resource resource = Resource.newResource(spnegoPropertiesFileName);
-      spnegoProperties.load(resource.getInputStream());
-
-      SpnegoAndKrb5LoginService loginService = new SpnegoAndKrb5LoginService(spnegoRealm, spnegoProperties.getProperty("targetName"));
+      SpnegoAndKrb5LoginService loginService = new SpnegoAndKrb5LoginService(spnegoRealm, config.getProperty(SPNEGO_TARGET_NAME_PROPERTY_KEY));
       context.getSecurityHandler().setLoginService(loginService);
 
       SuCxfAuthenticator authenticator = new SuCxfAuthenticator();
