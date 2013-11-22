@@ -53,17 +53,15 @@ import java.util.*;
 public abstract class Start {
   static final Logger LOG = LoggerFactory.getLogger(Start.class);
 
-  public static final String DEFAULT_SERVER_PREFIX = "cxf-server.";
-
-  public static final String PORT_PROPERTY_KEY = DEFAULT_SERVER_PREFIX + "http.port";
-  public static final String BIND_ADDRESS_PROPERTY_KEY = DEFAULT_SERVER_PREFIX + "bind.address";
-  public static final String SSL_ENABLED_PROPERTY_KEY = DEFAULT_SERVER_PREFIX + "ssl.enabled";
-  public static final String SSL_KEYSTORE_PROPERTY_KEY = DEFAULT_SERVER_PREFIX + "ssl.keystore";
-  public static final String SSL_PASSWORD_PROPERTY_KEY = DEFAULT_SERVER_PREFIX + "ssl.password";
-  public static final String SPNEGO_CONFIG_FILE_PROPERTY_KEY = DEFAULT_SERVER_PREFIX + "spnego.conf";
-  public static final String SPNEGO_REALM_PROPERTY_KEY = DEFAULT_SERVER_PREFIX + "spnego.realm";
-  public static final String SPNEGO_KDC_PROPERTY_KEY = DEFAULT_SERVER_PREFIX + "spnego.kdc";
-  public static final String SPNEGO_TARGET_NAME_PROPERTY_KEY = DEFAULT_SERVER_PREFIX + "spnego.targetName";
+  public static final String PORT_PROPERTY_KEY = "cxf-server.http.port";
+  public static final String BIND_ADDRESS_PROPERTY_KEY = "cxf-server.bind.address";
+  public static final String SSL_ENABLED_PROPERTY_KEY = "cxf-server.ssl.enabled";
+  public static final String SSL_KEYSTORE_PROPERTY_KEY = "cxf-server.ssl.keystore";
+  public static final String SSL_PASSWORD_PROPERTY_KEY = "cxf-server.ssl.password";
+  public static final String SPNEGO_CONFIG_FILE_PROPERTY_KEY = "cxf-server.spnego.conf";
+  public static final String SPNEGO_REALM_PROPERTY_KEY = "cxf-server.spnego.realm";
+  public static final String SPNEGO_KDC_PROPERTY_KEY = "cxf-server.spnego.kdc";
+  public static final String SPNEGO_TARGET_NAME_PROPERTY_KEY = "cxf-server.spnego.targetName";
 
   private static final ArrayList<String> MANDATORY_PROPERTIES = new ArrayList<String>() {{
     add(PORT_PROPERTY_KEY);
