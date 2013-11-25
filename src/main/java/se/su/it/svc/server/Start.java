@@ -168,18 +168,14 @@ public abstract class Start {
     }
   }
 
-  private static boolean checkDefinedConfigFileProperties(Properties properties) {
-    List<String> notFoundList = new ArrayList<String>();
+  private static void checkDefinedConfigFileProperties(Properties properties) {
 
     for (String mandatoryProperty : MANDATORY_PROPERTIES) {
+      if (properties.get(mandatoryProperty) == null) {
+        throw new IllegalStateException("Missing mandatory property: " + mandatoryProperty);
+      }
+
       if (MANDATORY_DEPENDENCIES.containsKey(mandatoryProperty)) {
-
-        /** See if the property is actually in the config file. */
-        if (properties.getProperty(mandatoryProperty) == null) {
-          notFoundList.add(mandatoryProperty);
-          continue;
-        }
-
         /** If the property is set we check if the feature is enabled */
         boolean functionEnabled = Boolean.parseBoolean(properties.getProperty(mandatoryProperty));
 
@@ -188,28 +184,12 @@ public abstract class Start {
           List<String> dependencies = MANDATORY_DEPENDENCIES.get(mandatoryProperty);
           for (String dep : dependencies) {
             if (properties.get(dep) == null) {
-              notFoundList.add(dep);
+              throw new IllegalStateException("Missing mandatory property: " + dep
+                      + " needed when " + mandatoryProperty + " is enabled.");
             }
           }
         }
-      } else {
-        if (properties.get(mandatoryProperty) == null) {
-          notFoundList.add(mandatoryProperty);
-        }
       }
     }
-
-    if (notFoundList.size() <= 0) {
-      return true;
-    }
-
-    for (String notFound : notFoundList) {
-      LOG.error("Property <" + notFound + ">   ...not found");
-    }
-
-    // End check for mandatory properties
-    LOG.error("Quitting because mandatory properties was missing...");
-    return false;  //To change body of created methods use File | Settings | File Templates.
   }
-
 }
