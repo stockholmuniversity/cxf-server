@@ -40,6 +40,7 @@ import org.eclipse.jetty.server.ssl.SslSocketConnector;
 import org.eclipse.jetty.webapp.WebAppContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import se.su.it.svc.server.config.ConfigHolder;
 import se.su.it.svc.server.filter.FilterHandler;
 import se.su.it.svc.server.log.CommonRequestLog;
 import se.su.it.svc.server.security.SpnegoAndKrb5LoginService;
@@ -80,7 +81,9 @@ public abstract class Start {
     }});
   }};
 
-  public static synchronized void start(Properties config) {
+  public static synchronized void start(ConfigHolder configHolder) {
+    configHolder.printConfiguration();
+    Properties config = configHolder.getProperties();
 
     checkDefinedConfigFileProperties(config);
 
@@ -122,9 +125,10 @@ public abstract class Start {
       }
 
       WebAppContext context = new WebAppContext();
-      context.addSystemClass("se.su.it.svc.server");
+      //context.addSystemClass("se.su.it.svc.server");
       context.addSystemClass("org.spocp.jspocp");
       context.addSystemClass("org.apache.cxf");
+      //context.setClassLoader(context.getClass().getClassLoader());
       context.setServer(server);
       context.setContextPath("/");
 
