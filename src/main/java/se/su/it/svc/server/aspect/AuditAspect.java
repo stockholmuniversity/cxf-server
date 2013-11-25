@@ -26,7 +26,7 @@ public class AuditAspect {
   private static final String UNKNOWN = "<unknown>";
   private static final String HIDDEN_VALUE = "******";
 
-  static final org.slf4j.Logger LOG = LoggerFactory.getLogger(AuditAspect.class);
+  private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(AuditAspect.class);
 
   @Before("execution(* (@javax.jws.WebService *).*(..))")
   public void auditBefore(JoinPoint joinPoint) throws Throwable {

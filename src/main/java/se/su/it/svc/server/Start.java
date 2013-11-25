@@ -52,7 +52,7 @@ import java.security.ProtectionDomain;
 import java.util.*;
 
 public abstract class Start {
-  static final Logger LOG = LoggerFactory.getLogger(Start.class);
+  private static final Logger LOG = LoggerFactory.getLogger(Start.class);
 
   public static final String PORT_PROPERTY_KEY = "cxf-server.http.port";
   public static final String BIND_ADDRESS_PROPERTY_KEY = "cxf-server.bind.address";

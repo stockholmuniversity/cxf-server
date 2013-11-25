@@ -8,7 +8,7 @@ import org.slf4j.LoggerFactory;
 @Aspect
 public class SanitizeWebParametersAspect {
 
-  static final org.slf4j.Logger LOG = LoggerFactory.getLogger(SanitizeWebParametersAspect.class);
+  private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(SanitizeWebParametersAspect.class);
 
   @Around("execution(* (@javax.jws.WebService *).*(..))")
   public Object runAspect(ProceedingJoinPoint joinPoint) throws Throwable {

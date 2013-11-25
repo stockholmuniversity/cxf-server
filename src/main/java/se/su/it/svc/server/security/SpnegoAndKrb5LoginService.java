@@ -57,10 +57,10 @@ public final class SpnegoAndKrb5LoginService extends AbstractLifeCycle implement
    */
   public static final String OID_MECH_SPNEGO = "1.3.6.1.5.5.2";
 
-  static final org.slf4j.Logger LOG = LoggerFactory.getLogger(SpnegoAndKrb5LoginService.class);
+  private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(SpnegoAndKrb5LoginService.class);
 
 
-  private String name;
+  private final String name;
   private IdentityService service;
   private GSSContext gssContext;
 

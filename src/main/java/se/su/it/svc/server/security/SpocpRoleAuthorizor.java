@@ -40,7 +40,7 @@ public class SpocpRoleAuthorizor implements Authorizor {
 
   private static SpocpRoleAuthorizor instance = null;
 
-  static final org.slf4j.Logger LOG = LoggerFactory.getLogger(SpocpRoleAuthorizor.class);
+  private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(SpocpRoleAuthorizor.class);
 
   private SPOCPConnectionFactoryImpl spocpConnectionFactory = null;
 

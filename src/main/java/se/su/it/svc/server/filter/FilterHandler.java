@@ -53,7 +53,7 @@ public class FilterHandler extends AbstractHandler {
   /**
    *
    */
-  static final org.slf4j.Logger LOG = LoggerFactory.getLogger(FilterHandler.class);
+  private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(FilterHandler.class);
 
   private final String statusText;
 

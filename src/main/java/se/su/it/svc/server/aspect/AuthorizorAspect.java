@@ -46,7 +46,7 @@ import java.lang.annotation.Annotation;
 @Aspect
 public class AuthorizorAspect {
 
-  static final org.slf4j.Logger LOG = LoggerFactory.getLogger(AuthorizorAspect.class);
+  private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(AuthorizorAspect.class);
 
   private Authorizor authorizor;
 
