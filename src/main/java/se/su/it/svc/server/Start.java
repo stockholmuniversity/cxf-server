@@ -52,7 +52,7 @@ import java.security.ProtectionDomain;
 import java.util.*;
 
 public abstract class Start {
-  static final Logger LOG = LoggerFactory.getLogger(Start.class);
+  private static final Logger LOG = LoggerFactory.getLogger(Start.class);
 
   public static final String PORT_PROPERTY_KEY = "cxf-server.http.port";
   public static final String BIND_ADDRESS_PROPERTY_KEY = "cxf-server.bind.address";
@@ -168,7 +168,7 @@ public abstract class Start {
     }
   }
 
-  private static boolean checkDefinedConfigFileProperties(Properties properties) {
+  private static void checkDefinedConfigFileProperties(Properties properties) {
     List<String> notFoundList = new ArrayList<String>();
 
     for (String mandatoryProperty : MANDATORY_PROPERTIES) {
@@ -200,7 +200,7 @@ public abstract class Start {
     }
 
     if (notFoundList.size() <= 0) {
-      return true;
+      return;
     }
 
     for (String notFound : notFoundList) {
@@ -209,7 +209,5 @@ public abstract class Start {
 
     // End check for mandatory properties
     LOG.error("Quitting because mandatory properties was missing...");
-    return false;  //To change body of created methods use File | Settings | File Templates.
   }
-
 }

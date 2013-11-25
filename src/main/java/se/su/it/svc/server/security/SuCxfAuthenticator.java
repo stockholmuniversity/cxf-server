@@ -44,7 +44,7 @@ import javax.servlet.http.HttpServletRequest;
 
 public class SuCxfAuthenticator extends SpnegoAuthenticator {
 
-  static final org.slf4j.Logger LOG = LoggerFactory.getLogger(SuCxfAuthenticator.class);
+  private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(SuCxfAuthenticator.class);
 
   /**
    * Validate the request.
