@@ -59,7 +59,7 @@ public abstract class Start {
   public static final String SSL_ENABLED_PROPERTY_KEY = "cxf-server.ssl.enabled";
   public static final String SSL_KEYSTORE_PROPERTY_KEY = "cxf-server.ssl.keystore";
   public static final String SSL_PASSWORD_PROPERTY_KEY = "cxf-server.ssl.password";
-  public static final String LOGIN_CONFIG_FILE_PROPERTY_KEY = "cxf-server.login.conf";
+  public static final String LOGIN_CONFIG_FILE_PROPERTY_KEY = "cxf-server.login.config";
   public static final String SPNEGO_REALM_PROPERTY_KEY = "cxf-server.spnego.realm";
   public static final String SPNEGO_KDC_PROPERTY_KEY = "cxf-server.spnego.kdc";
   public static final String SPNEGO_TARGET_NAME_PROPERTY_KEY = "cxf-server.spnego.targetName";
