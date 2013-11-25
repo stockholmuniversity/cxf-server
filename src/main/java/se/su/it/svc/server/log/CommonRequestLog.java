@@ -41,7 +41,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class CommonRequestLog implements RequestLog {
-  private static final Logger logger = LoggerFactory.getLogger("RequestLog");
+  private static Logger logger = LoggerFactory.getLogger("RequestLog");
 
   private boolean started = false;
 
