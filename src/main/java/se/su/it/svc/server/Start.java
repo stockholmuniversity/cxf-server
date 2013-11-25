@@ -125,10 +125,6 @@ public abstract class Start {
       }
 
       WebAppContext context = new WebAppContext();
-      //context.addSystemClass("se.su.it.svc.server");
-      context.addSystemClass("org.spocp.jspocp");
-      context.addSystemClass("org.apache.cxf");
-      //context.setClassLoader(context.getClass().getClassLoader());
       context.setServer(server);
       context.setContextPath("/");
 
