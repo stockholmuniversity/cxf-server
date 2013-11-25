@@ -59,7 +59,7 @@ public abstract class Start {
   public static final String SSL_ENABLED_PROPERTY_KEY = "cxf-server.ssl.enabled";
   public static final String SSL_KEYSTORE_PROPERTY_KEY = "cxf-server.ssl.keystore";
   public static final String SSL_PASSWORD_PROPERTY_KEY = "cxf-server.ssl.password";
-  public static final String SPNEGO_CONFIG_FILE_PROPERTY_KEY = "cxf-server.spnego.conf";
+  public static final String LOGIN_CONFIG_FILE_PROPERTY_KEY = "cxf-server.login.conf";
   public static final String SPNEGO_REALM_PROPERTY_KEY = "cxf-server.spnego.realm";
   public static final String SPNEGO_KDC_PROPERTY_KEY = "cxf-server.spnego.kdc";
   public static final String SPNEGO_TARGET_NAME_PROPERTY_KEY = "cxf-server.spnego.targetName";
@@ -68,7 +68,7 @@ public abstract class Start {
     add(PORT_PROPERTY_KEY);
     add(BIND_ADDRESS_PROPERTY_KEY);
     add(SSL_ENABLED_PROPERTY_KEY);
-    add(SPNEGO_CONFIG_FILE_PROPERTY_KEY);
+    add(LOGIN_CONFIG_FILE_PROPERTY_KEY);
     add(SPNEGO_REALM_PROPERTY_KEY);
     add(SPNEGO_KDC_PROPERTY_KEY);
     add(SPNEGO_TARGET_NAME_PROPERTY_KEY);
@@ -96,7 +96,7 @@ public abstract class Start {
     String sslPassword = config.getProperty(SSL_PASSWORD_PROPERTY_KEY);
 
     //extracting the config for the spnegp setup
-    String spnegoConfigFileName = config.getProperty(SPNEGO_CONFIG_FILE_PROPERTY_KEY);
+    String loginConfig = config.getProperty(LOGIN_CONFIG_FILE_PROPERTY_KEY);
     String spnegoRealm = config.getProperty(SPNEGO_REALM_PROPERTY_KEY);
     String spnegoKdc = config.getProperty(SPNEGO_KDC_PROPERTY_KEY);
 
@@ -148,13 +148,13 @@ public abstract class Start {
       requestLogHandler.setRequestLog(new CommonRequestLog());
 
       // Setup spnego conf
-      if(! new File(spnegoConfigFileName).exists()) {
-        LOG.error("No login.config file found at " + spnegoConfigFileName + ".");
-        throw new IllegalStateException("No login.config found at " + spnegoConfigFileName + ". Can't configure SPNEGO.");
+      if(! new File(loginConfig).exists()) {
+        LOG.error("No login.config file found at " + loginConfig + ".");
+        throw new IllegalStateException("No login.config found at " + loginConfig + ". Can't configure SPNEGO.");
       }
       System.setProperty("java.security.krb5.realm", spnegoRealm);
       System.setProperty("javax.security.auth.useSubjectCredsOnly", "false");
-      System.setProperty("java.security.auth.login.config", "=file:" + spnegoConfigFileName);
+      System.setProperty("java.security.auth.login.config", "=file:" + loginConfig);
       System.setProperty("java.security.krb5.kdc", spnegoKdc);
 
       SpnegoAndKrb5LoginService loginService = new SpnegoAndKrb5LoginService(spnegoRealm, config.getProperty(SPNEGO_TARGET_NAME_PROPERTY_KEY));
