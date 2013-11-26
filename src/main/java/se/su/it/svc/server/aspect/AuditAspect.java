@@ -101,7 +101,7 @@ public class AuditAspect {
     String methodName = joinPoint.getSignature().getName();
     Object[] args = joinPoint.getArgs();
 
-    LOG.info("[" + id + "] After exception: " + targetClass.getName() + "." + methodName + " with " + args.length + "params");
+    LOG.info("[" + id + "] After exception: " + targetClass.getName() + "." + methodName + " with " + args.length + " params");
 
     Method method = null;
     try {
