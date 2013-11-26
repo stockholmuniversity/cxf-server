@@ -37,6 +37,7 @@ import org.eclipse.jetty.server.handler.DefaultHandler;
 import org.eclipse.jetty.server.handler.HandlerList;
 import org.eclipse.jetty.server.handler.RequestLogHandler;
 import org.eclipse.jetty.server.ssl.SslSocketConnector;
+import org.eclipse.jetty.webapp.WebAppClassLoader;
 import org.eclipse.jetty.webapp.WebAppContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -124,13 +125,14 @@ public abstract class Start {
         server.setConnectors(new Connector[]{connector});
       }
 
+      ProtectionDomain protectionDomain = Start.class.getProtectionDomain();
+      URL location = protectionDomain.getCodeSource().getLocation();
+
       WebAppContext context = new WebAppContext();
       context.setServer(server);
       context.setContextPath("/");
-
-      ProtectionDomain protectionDomain = Start.class.getProtectionDomain();
-      URL location = protectionDomain.getCodeSource().getLocation();
       context.setWar(location.toExternalForm());
+      context.setClassLoader(new WebAppClassLoader(context.getClass().getClassLoader(), context));
 
       RequestLogHandler requestLogHandler = new RequestLogHandler();
       FilterHandler fh = new FilterHandler();
