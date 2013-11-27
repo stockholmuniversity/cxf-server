@@ -41,29 +41,32 @@ import org.eclipse.jetty.webapp.WebAppClassLoader;
 import org.eclipse.jetty.webapp.WebAppContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import se.su.it.svc.server.config.ConfigHolder;
 import se.su.it.svc.server.filter.FilterHandler;
 import se.su.it.svc.server.log.CommonRequestLog;
 import se.su.it.svc.server.security.SpnegoAndKrb5LoginService;
 import se.su.it.svc.server.security.SuCxfAuthenticator;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.net.URL;
 import java.security.ProtectionDomain;
 import java.util.*;
 
-public abstract class Start {
-  private static final Logger LOG = LoggerFactory.getLogger(Start.class);
+public abstract class Server {
+  private static final Logger LOG = LoggerFactory.getLogger(Server.class);
+  private static final String DEFAULT_CONFIG_PATH = "default.properties";
+  private static final String CUSTOM_CONFIG_PROPNAME = "config";
 
-  public static final String PORT_PROPERTY_KEY = "cxf-server.http.port";
-  public static final String BIND_ADDRESS_PROPERTY_KEY = "cxf-server.bind.address";
-  public static final String SSL_ENABLED_PROPERTY_KEY = "cxf-server.ssl.enabled";
-  public static final String SSL_KEYSTORE_PROPERTY_KEY = "cxf-server.ssl.keystore";
-  public static final String SSL_PASSWORD_PROPERTY_KEY = "cxf-server.ssl.password";
-  public static final String LOGIN_CONFIG_FILE_PROPERTY_KEY = "cxf-server.login.config";
-  public static final String SPNEGO_REALM_PROPERTY_KEY = "cxf-server.spnego.realm";
-  public static final String SPNEGO_KDC_PROPERTY_KEY = "cxf-server.spnego.kdc";
-  public static final String SPNEGO_TARGET_NAME_PROPERTY_KEY = "cxf-server.spnego.targetName";
+  public static final String PORT_PROPERTY_KEY = "http.port";
+  public static final String BIND_ADDRESS_PROPERTY_KEY = "bind.address";
+  public static final String SSL_ENABLED_PROPERTY_KEY = "ssl.enabled";
+  public static final String SSL_KEYSTORE_PROPERTY_KEY = "ssl.keystore";
+  public static final String SSL_PASSWORD_PROPERTY_KEY = "ssl.password";
+  public static final String LOGIN_CONFIG_FILE_PROPERTY_KEY = "login.config";
+  public static final String SPNEGO_REALM_PROPERTY_KEY = "spnego.realm";
+  public static final String SPNEGO_KDC_PROPERTY_KEY = "spnego.kdc";
+  public static final String SPNEGO_TARGET_NAME_PROPERTY_KEY = "spnego.targetName";
 
   private static final ArrayList<String> MANDATORY_PROPERTIES = new ArrayList<String>() {{
     add(PORT_PROPERTY_KEY);
@@ -82,9 +85,9 @@ public abstract class Start {
     }});
   }};
 
-  public static synchronized void start(ConfigHolder configHolder) {
-    configHolder.printConfiguration();
-    Properties config = configHolder.getProperties();
+  public synchronized void start() {
+    Properties config = loadConfig();
+    printConfig(config);
 
     checkDefinedConfigFileProperties(config);
 
@@ -125,7 +128,7 @@ public abstract class Start {
         server.setConnectors(new Connector[]{connector});
       }
 
-      ProtectionDomain protectionDomain = Start.class.getProtectionDomain();
+      ProtectionDomain protectionDomain = Server.class.getProtectionDomain();
       URL location = protectionDomain.getCodeSource().getLocation();
 
       WebAppContext context = new WebAppContext();
@@ -170,7 +173,7 @@ public abstract class Start {
     }
   }
 
-  private static void checkDefinedConfigFileProperties(Properties properties) {
+  private void checkDefinedConfigFileProperties(Properties properties) {
 
     for (String mandatoryProperty : MANDATORY_PROPERTIES) {
       if (properties.get(mandatoryProperty) == null) {
@@ -191,6 +194,58 @@ public abstract class Start {
             }
           }
         }
+      }
+    }
+  }
+
+  private Properties loadConfig() {
+    ClassLoader cl = Server.class.getClassLoader();
+    URL defaultConfigUrl = cl.getResource(DEFAULT_CONFIG_PATH);
+
+    if (defaultConfigUrl == null)
+      throw new IllegalStateException("Failed to find config resource '" + DEFAULT_CONFIG_PATH);
+
+    Properties config = new Properties();
+
+    try {
+      config.load(defaultConfigUrl.openStream());
+    } catch (IOException e) {
+      throw new IllegalStateException("Failed to read config: " + e.getMessage(), e);
+    }
+
+    String customConfigPath = System.getProperty(CUSTOM_CONFIG_PROPNAME);
+
+    if (customConfigPath != null) {
+      File customConfigFile = new File(customConfigPath);
+
+      if (!customConfigFile.exists())
+        throw new IllegalStateException("Failed to find config resource '" + customConfigPath);
+
+      try {
+        config.load(new FileInputStream(customConfigFile));
+      } catch (IOException e) {
+        throw new IllegalStateException("Failed to read config: " + e.getMessage(), e);
+      }
+    }
+
+    return config;
+  }
+
+  private void printConfig(Properties config) {
+    LOG.info("*** CXF SERVER - Final Configuration ***");
+
+    TreeMap<String, Object> sorted = new TreeMap<String, Object>();
+
+    for (Map.Entry<Object, Object> entry : config.entrySet()) {
+      if (entry.getKey() instanceof String)
+        sorted.put((String) entry.getKey(), entry.getValue());
+    }
+
+    for (Map.Entry<String, Object> entry : sorted.entrySet()) {
+      if (entry.getKey().contains("password")) {
+        LOG.info(entry.getKey() + " => *********");
+      } else {
+        LOG.info(entry.getKey() + " => " + entry.getValue());
       }
     }
   }
