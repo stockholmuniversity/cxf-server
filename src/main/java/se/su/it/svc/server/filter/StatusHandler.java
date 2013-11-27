@@ -43,9 +43,9 @@ import java.io.InputStream;
 import java.net.URLClassLoader;
 import java.util.Properties;
 
-public class FilterHandler extends AbstractHandler {
+public class StatusHandler extends AbstractHandler {
 
-  private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(FilterHandler.class);
+  private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(StatusHandler.class);
 
   private final String statusText;
 
@@ -58,7 +58,7 @@ public class FilterHandler extends AbstractHandler {
   /**
    * Create a new handler.
    */
-  public FilterHandler() {
+  public StatusHandler() {
     StringBuilder sb = new StringBuilder();
 
     sb.append(createInfoText("WEB-INF/classes/version.properties", ""));
