@@ -43,14 +43,8 @@ import java.io.InputStream;
 import java.net.URLClassLoader;
 import java.util.Properties;
 
-/**
- *
- */
 public class FilterHandler extends AbstractHandler {
 
-  /**
-   *
-   */
   private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(FilterHandler.class);
 
   private final String statusText;
@@ -62,7 +56,7 @@ public class FilterHandler extends AbstractHandler {
   private static final String NOINFO = "No information available";
 
   /**
-   *
+   * Create a new handler.
    */
   public FilterHandler() {
     StringBuilder sb = new StringBuilder();
@@ -74,6 +68,13 @@ public class FilterHandler extends AbstractHandler {
     statusText = sb.toString();
   }
 
+  /**
+   * Create a html block from properties in the supplied file.
+   *
+   * @param filePath path to the file containing the properties
+   * @param propertyPrefix a prefix to add to the output in front of every property
+   * @return a html string
+   */
   private static String createInfoText(String filePath, String propertyPrefix) {
     StringBuilder sb = new StringBuilder();
     Properties versionProps = new Properties();
@@ -102,6 +103,13 @@ public class FilterHandler extends AbstractHandler {
     return sb.toString();
   }
 
+  /**
+   * Create html for supplied key & value
+   *
+   * @param key the key
+   * @param value the value
+   * @return html string
+   */
   private static String attribute2Html(String key, String value) {
     StringBuilder sb = new StringBuilder();
     sb.append(key);
