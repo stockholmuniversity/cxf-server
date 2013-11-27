@@ -203,7 +203,7 @@ public abstract class Server {
     URL defaultConfigUrl = cl.getResource(DEFAULT_CONFIG_PATH);
 
     if (defaultConfigUrl == null)
-      throw new IllegalStateException("Failed to find config resource '" + DEFAULT_CONFIG_PATH);
+      throw new IllegalStateException("Failed to find config resource '" + DEFAULT_CONFIG_PATH + "'");
 
     Properties config = new Properties();
 
@@ -219,7 +219,7 @@ public abstract class Server {
       File customConfigFile = new File(customConfigPath);
 
       if (!customConfigFile.exists())
-        throw new IllegalStateException("Failed to find config resource '" + customConfigPath);
+        throw new IllegalStateException("Failed to find config resource '" + customConfigPath + "'");
 
       try {
         config.load(new FileInputStream(customConfigFile));
@@ -228,7 +228,7 @@ public abstract class Server {
       }
     }
     else {
-      LOG.warn("No " + CUSTOM_CONFIG_PROPNAME + " given, using default config.");
+      LOG.warn("No '" + CUSTOM_CONFIG_PROPNAME + "' property given, using default properties.");
     }
 
     return config;
