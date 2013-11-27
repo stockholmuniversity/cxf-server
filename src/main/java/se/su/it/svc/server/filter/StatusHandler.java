@@ -43,6 +43,9 @@ import java.io.InputStream;
 import java.net.URLClassLoader;
 import java.util.Properties;
 
+/**
+ * A filter that shows status read from property files.
+ */
 public class StatusHandler extends AbstractHandler {
 
   private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(StatusHandler.class);
