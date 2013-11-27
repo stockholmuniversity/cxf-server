@@ -117,14 +117,9 @@ public class FilterHandler extends AbstractHandler {
   }
 
   /**
-   *
-   * @param target
-   * @param baseRequest
-   * @param request
-   * @param response
-   * @throws IOException
-   * @throws ServletException
+   * @see org.eclipse.jetty.server.Handler#handle(String, org.eclipse.jetty.server.Request, javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse)
    */
+  @Override
   public final void handle(String target, Request baseRequest, HttpServletRequest request, HttpServletResponse response)
       throws IOException, ServletException {
 
