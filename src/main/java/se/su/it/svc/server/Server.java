@@ -56,7 +56,7 @@ import java.util.*;
 public abstract class Server {
   private static final Logger LOG = LoggerFactory.getLogger(Server.class);
   private static final String DEFAULT_CONFIG_PATH = "default.properties";
-  private static final String CUSTOM_CONFIG_PROPNAME = "config";
+  private static final String CUSTOM_CONFIG_PROPNAME = "cxf-server.properties";
 
   public static final String PORT_PROPERTY_KEY = "http.port";
   public static final String BIND_ADDRESS_PROPERTY_KEY = "bind.address";
@@ -226,6 +226,9 @@ public abstract class Server {
       } catch (IOException e) {
         throw new IllegalStateException("Failed to read config: " + e.getMessage(), e);
       }
+    }
+    else {
+      LOG.warn("No " + CUSTOM_CONFIG_PROPNAME + " given, using default config.");
     }
 
     return config;
