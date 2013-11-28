@@ -41,7 +41,7 @@ import org.eclipse.jetty.webapp.WebAppClassLoader;
 import org.eclipse.jetty.webapp.WebAppContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import se.su.it.svc.server.filter.FilterHandler;
+import se.su.it.svc.server.filter.StatusHandler;
 import se.su.it.svc.server.log.CommonRequestLog;
 import se.su.it.svc.server.security.SpnegoAndKrb5LoginService;
 import se.su.it.svc.server.security.SuCxfAuthenticator;
@@ -138,10 +138,10 @@ public abstract class Server {
       context.setClassLoader(new WebAppClassLoader(context.getClass().getClassLoader(), context));
 
       RequestLogHandler requestLogHandler = new RequestLogHandler();
-      FilterHandler fh = new FilterHandler();
+      StatusHandler statusHandler = new StatusHandler();
 
       HandlerList handlers = new HandlerList();
-      handlers.setHandlers(new Handler[]{requestLogHandler, fh, context, new DefaultHandler()});
+      handlers.setHandlers(new Handler[]{requestLogHandler, statusHandler, context, new DefaultHandler()});
 
       server.setHandler(handlers);
 

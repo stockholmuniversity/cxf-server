@@ -40,20 +40,13 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URLClassLoader;
-import java.util.LinkedHashMap;
-import java.util.Map;
 import java.util.Properties;
 
 /**
- *
+ * A filter that shows status read from property files.
  */
-public class FilterHandler extends AbstractHandler {
-
-  /**
-   *
-   */
-  private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(FilterHandler.class);
+public class StatusHandler extends AbstractHandler {
+  private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(StatusHandler.class);
 
   private final String statusText;
 
@@ -64,52 +57,39 @@ public class FilterHandler extends AbstractHandler {
   private static final String NOINFO = "No information available";
 
   /**
-   *
+   * Create a new handler.
    */
-  public FilterHandler() {
-
+  public StatusHandler() {
     StringBuilder sb = new StringBuilder();
 
-    URLClassLoader cl = (URLClassLoader) Thread.currentThread().getContextClassLoader();
-
-    sb.append(createInfoText(cl, "WEB-INF/classes/version.properties", new LinkedHashMap<String, String>() {{
-      put(PROJECT_NAME_KEY, "Name: ");
-      put(PROJECT_VERSION_KEY, "Version: ");
-      put(PROJECT_BUILD_DATE_KEY, "Build Time: ");
-    }}));
-
+    sb.append(createInfoText("WEB-INF/classes/version.properties", ""));
     sb.append("<br /><br />");
-
-    sb.append(createInfoText(cl, "version.properties", new LinkedHashMap<String, String>() {{
-      put(PROJECT_NAME_KEY, "Server Name: ");
-      put(PROJECT_VERSION_KEY, "Server Version: ");
-      put(PROJECT_BUILD_DATE_KEY, "Server Build Time: ");
-    }}));
-
+    sb.append(createInfoText("version.properties", "Server"));
 
     statusText = sb.toString();
   }
 
-  private static String createInfoText(URLClassLoader cl, String filePath, Map attributes) {
+  /**
+   * Create a html block from properties in the supplied file.
+   *
+   * @param filePath path to the file containing the properties
+   * @param propertyPrefix a prefix to add to the output in front of every property
+   * @return a html string
+   */
+  private static String createInfoText(String filePath, String propertyPrefix) {
     StringBuilder sb = new StringBuilder();
-
     Properties versionProps = new Properties();
+
+    ClassLoader cl =  Thread.currentThread().getContextClassLoader();
 
     InputStream inputStream = cl.getResourceAsStream(filePath);
     try {
       versionProps.load(inputStream);
-      String name = versionProps.getProperty(PROJECT_NAME_KEY);
-      String version = versionProps.getProperty(PROJECT_VERSION_KEY);
-      String builddate = versionProps.getProperty(PROJECT_BUILD_DATE_KEY);
-      sb.append(attributes.get(PROJECT_NAME_KEY))
-          .append(name != null && name.length() > 0 ? name : NOINFO)
-          .append("<br />");
-      sb.append(attributes.get(PROJECT_VERSION_KEY))
-          .append(version != null && version.length() > 0 ? version : NOINFO)
-          .append("<br />");
-      sb.append(attributes.get(PROJECT_BUILD_DATE_KEY))
-          .append(builddate != null && builddate.length() > 0 ? builddate : NOINFO)
-          .append("<br />");
+      String name = attribute2Html(propertyPrefix + "Name: ", versionProps.getProperty(PROJECT_NAME_KEY));
+      String version = attribute2Html(propertyPrefix + "Version: ", versionProps.getProperty(PROJECT_VERSION_KEY));
+      String build = attribute2Html(propertyPrefix + "Build Time: ", versionProps.getProperty(PROJECT_BUILD_DATE_KEY));
+
+      sb.append(name).append(version).append(build);
     } catch (Exception e) {
       LOG.debug("Warning: Could not read version.properties file. ", e);
       sb.append(NOINFO);
@@ -120,18 +100,38 @@ public class FilterHandler extends AbstractHandler {
         LOG.error("Could not close stream when reading resource", ioe);
       }
     }
+
     return sb.toString();
   }
 
   /**
+   * Create html for supplied key & value
    *
-   * @param target
-   * @param baseRequest
-   * @param request
-   * @param response
-   * @throws IOException
-   * @throws ServletException
+   * @param key the key
+   * @param value the value
+   * @return html string
    */
+  private static String attribute2Html(String key, String value) {
+    StringBuilder sb = new StringBuilder("");
+
+    if (key != null && key.length() > 0) {
+      sb.append(key);
+
+      if (value != null && value.length() > 0)
+        sb.append(value);
+      else
+        sb.append(NOINFO);
+
+      sb.append("<br />");
+    }
+
+    return sb.toString();
+  }
+
+  /**
+   * @see org.eclipse.jetty.server.Handler#handle(String, org.eclipse.jetty.server.Request, javax.servlet.http.HttpServletRequest, javax.servlet.http.HttpServletResponse)
+   */
+  @Override
   public final void handle(String target, Request baseRequest, HttpServletRequest request, HttpServletResponse response)
       throws IOException, ServletException {
 

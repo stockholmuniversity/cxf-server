@@ -5,7 +5,6 @@ import org.junit.Test
 import org.junit.runner.RunWith
 import org.powermock.core.classloader.annotations.PrepareForTest
 import org.powermock.modules.junit4.PowerMockRunner
-import org.powermock.reflect.Whitebox
 import org.spocp.SPOCPException
 import org.spocp.SPOCPToken
 import org.spocp.SPOCPTokenInputStream
@@ -14,16 +13,8 @@ import org.spocp.client.SPOCPConnectionFactoryImpl
 import org.spocp.client.SPOCPResult
 import se.su.it.svc.server.annotations.AuthzRole
 
-import static org.easymock.EasyMock.anyObject
-import static org.easymock.EasyMock.anyString
-import static org.easymock.EasyMock.expect
-import static org.easymock.EasyMock.verify
-import static org.powermock.api.easymock.PowerMock.createMock
-import static org.powermock.api.easymock.PowerMock.createPartialMock
-import static org.powermock.api.easymock.PowerMock.expectPrivate
-import static org.powermock.api.easymock.PowerMock.mockStaticPartial
-import static org.powermock.api.easymock.PowerMock.replay
-import static org.powermock.api.easymock.PowerMock.replayAll
+import static org.easymock.EasyMock.*
+import static org.powermock.api.easymock.PowerMock.*
 
 @RunWith(PowerMockRunner.class)
 @PrepareForTest([ SpocpRoleAuthorizor, SPOCPResult ])
@@ -162,6 +153,20 @@ class SpocpRoleAuthorizorTest {
     authorizor.spocpConnectionFactory = mockFactory
 
     assert authorizor.doSpocpCall('foo', 'foo')
+  }
+
+  @Test
+  void "doSpocpCall handles spocp is null"() {
+
+    def mockFactory = createMock(SPOCPConnectionFactoryImpl)
+    expect(mockFactory.getConnection()).andReturn(null)
+
+    replayAll(mockFactory)
+
+    def authorizor = SpocpRoleAuthorizor.instance
+    authorizor.spocpConnectionFactory = mockFactory
+
+    authorizor.doSpocpCall('foo', 'foo')
   }
 
   @Test
