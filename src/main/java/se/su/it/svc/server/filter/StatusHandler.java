@@ -47,7 +47,6 @@ import java.util.Properties;
  * A filter that shows status read from property files.
  */
 public class StatusHandler extends AbstractHandler {
-
   private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(StatusHandler.class);
 
   private final String statusText;
@@ -87,9 +86,9 @@ public class StatusHandler extends AbstractHandler {
     InputStream inputStream = cl.getResourceAsStream(filePath);
     try {
       versionProps.load(inputStream);
-      String name = attribute2Html(propertyPrefix + "Name:", versionProps.getProperty(PROJECT_NAME_KEY));
-      String version = attribute2Html(propertyPrefix + "Version:", versionProps.getProperty(PROJECT_VERSION_KEY));
-      String build = attribute2Html(propertyPrefix + "Build Time:", versionProps.getProperty(PROJECT_BUILD_DATE_KEY));
+      String name = attribute2Html(propertyPrefix + "Name: ", versionProps.getProperty(PROJECT_NAME_KEY));
+      String version = attribute2Html(propertyPrefix + "Version: ", versionProps.getProperty(PROJECT_VERSION_KEY));
+      String build = attribute2Html(propertyPrefix + "Build Time: ", versionProps.getProperty(PROJECT_BUILD_DATE_KEY));
 
       sb.append(name).append(version).append(build);
     } catch (Exception e) {
@@ -114,15 +113,18 @@ public class StatusHandler extends AbstractHandler {
    * @return html string
    */
   private static String attribute2Html(String key, String value) {
-    StringBuilder sb = new StringBuilder();
-    sb.append(key);
+    StringBuilder sb = new StringBuilder("");
 
-    if (value != null && value.length() > 0)
-      sb.append(value);
-    else
-      sb.append(NOINFO);
+    if (key != null && key.length() > 0) {
+      sb.append(key);
 
-    sb.append("<br />");
+      if (value != null && value.length() > 0)
+        sb.append(value);
+      else
+        sb.append(NOINFO);
+
+      sb.append("<br />");
+    }
 
     return sb.toString();
   }
