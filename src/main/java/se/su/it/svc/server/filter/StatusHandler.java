@@ -40,7 +40,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URLClassLoader;
 import java.util.Properties;
 
 /**
@@ -81,7 +80,7 @@ public class StatusHandler extends AbstractHandler {
     StringBuilder sb = new StringBuilder();
     Properties versionProps = new Properties();
 
-    URLClassLoader cl = (URLClassLoader) Thread.currentThread().getContextClassLoader();
+    ClassLoader cl =  Thread.currentThread().getContextClassLoader();
 
     InputStream inputStream = cl.getResourceAsStream(filePath);
     try {
