@@ -34,7 +34,7 @@ import org.eclipse.jetty.server.Connector;
 import org.eclipse.jetty.server.Handler;
 import org.eclipse.jetty.server.bio.SocketConnector;
 import org.eclipse.jetty.server.handler.DefaultHandler;
-import org.eclipse.jetty.server.handler.HandlerList;
+import org.eclipse.jetty.server.handler.HandlerCollection;
 import org.eclipse.jetty.server.handler.RequestLogHandler;
 import org.eclipse.jetty.server.ssl.SslSocketConnector;
 import org.eclipse.jetty.webapp.WebAppClassLoader;
@@ -140,9 +140,8 @@ public abstract class Server {
       RequestLogHandler requestLogHandler = new RequestLogHandler();
       StatusHandler statusHandler = new StatusHandler();
 
-      HandlerList handlers = new HandlerList();
-      handlers.setHandlers(new Handler[]{requestLogHandler, statusHandler, context, new DefaultHandler()});
-
+      HandlerCollection handlers = new HandlerCollection();
+      handlers.setHandlers(new Handler[]{statusHandler, context, new DefaultHandler(), requestLogHandler});
       server.setHandler(handlers);
 
       // Setup request logging
