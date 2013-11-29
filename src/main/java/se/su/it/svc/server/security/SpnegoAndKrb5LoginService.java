@@ -45,7 +45,7 @@ import javax.security.auth.Subject;
 /**
  * Handle Negotiate requests for mechs SPNEGO & Krb5, based on org.eclipse.jetty.security.SpnegoLoginService
  */
-public final class SpnegoAndKrb5LoginService extends AbstractLifeCycle implements LoginService {
+public class SpnegoAndKrb5LoginService extends AbstractLifeCycle implements LoginService {
 
   /**
    * OID for mech Krb5.
@@ -58,16 +58,17 @@ public final class SpnegoAndKrb5LoginService extends AbstractLifeCycle implement
   public static final String OID_MECH_SPNEGO = "1.3.6.1.5.5.2";
 
   private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(SpnegoAndKrb5LoginService.class);
-  private static final GSSManager manager = GSSManager.getInstance();
 
   private final String name;
   private IdentityService service;
   private final GSSName gssName;
   private final Oid[] mechs;
+  private final GSSManager manager;
 
   public SpnegoAndKrb5LoginService( String name, String targetName ) throws GSSException {
     this.name = name;
 
+    manager = GSSManager.getInstance();
     gssName = manager.createName(targetName, null);
 
     mechs = new Oid[] {
@@ -94,7 +95,7 @@ public final class SpnegoAndKrb5LoginService extends AbstractLifeCycle implement
     byte[] authToken = B64Code.decode((String)credentials);
 
     try {
-      GSSContext gssContext = setupContext(gssName, mechs);
+      GSSContext gssContext = setupContext();
 
       if (gssContext == null) {
         throw new IllegalStateException("GSS: Failed to establish GSSContext");
@@ -162,13 +163,17 @@ public final class SpnegoAndKrb5LoginService extends AbstractLifeCycle implement
   /**
    * Setup & return a GSSContext.
    *
-   * @param gssName the gssName (created from the server principal) to use
-   * @param mechs the mechs to use
    * @return a GSSContext.
    * @throws GSSException if something goes wrong with the setup of the context.
    */
-  private static GSSContext setupContext(GSSName gssName, Oid[] mechs) throws GSSException {
-    GSSCredential serverCreds = manager.createCredential(gssName, GSSCredential.INDEFINITE_LIFETIME, mechs, GSSCredential.ACCEPT_ONLY);
-    return manager.createContext(serverCreds);
+  private GSSContext setupContext() throws GSSException {
+    GSSContext context = null;
+
+    if (manager != null) {
+      GSSCredential serverCreds = manager.createCredential(gssName, GSSCredential.INDEFINITE_LIFETIME, mechs, GSSCredential.ACCEPT_ONLY);
+      context = manager.createContext(serverCreds);
+    }
+
+    return context;
   }
 }

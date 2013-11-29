@@ -32,58 +32,27 @@
 package se.su.it.svc.server.security
 
 import org.eclipse.jetty.security.DefaultIdentityService
-import org.eclipse.jetty.security.SpnegoUserIdentity
 import org.eclipse.jetty.security.SpnegoUserPrincipal
 import org.eclipse.jetty.server.UserIdentity
-import org.ietf.jgss.GSSContext
-import org.ietf.jgss.GSSException
-import org.ietf.jgss.GSSManager
-import org.ietf.jgss.GSSName
-import org.junit.Before
+import org.ietf.jgss.*
 import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.ExpectedException
 import org.junit.runner.RunWith
-import org.powermock.core.classloader.annotations.PrepareForTest
 import org.powermock.modules.junit4.PowerMockRunner
-import sun.security.jgss.GSSNameImpl
+import org.powermock.reflect.Whitebox
 
-import static org.easymock.EasyMock.anyByte
-import static org.easymock.EasyMock.anyInt
-import static org.easymock.EasyMock.anyObject
-import static org.easymock.EasyMock.expect
+import static org.easymock.EasyMock.*
 import static org.powermock.api.easymock.PowerMock.createMock
-import static org.powermock.api.easymock.PowerMock.expectPrivate
-import static org.powermock.api.easymock.PowerMock.mockStatic
-import static org.powermock.api.easymock.PowerMock.replay
-import static org.powermock.api.easymock.PowerMock.verify
 
 @RunWith(PowerMockRunner.class)
-@PrepareForTest([ SpnegoAndKrb5LoginService ])
 class SpnegoAndKrb5LoginServiceTest {
 
   @Rule
   public ExpectedException thrown = ExpectedException.none();
 
   @Test
-  void "Test that constructor throws exception if no GSSContext"() {
-    mockStatic(SpnegoAndKrb5LoginService)
-    expectPrivate(SpnegoAndKrb5LoginService, 'setupContext', anyObject(String))
-            .andReturn(null)
-    replay(SpnegoAndKrb5LoginService)
-
-    thrown.expect(IllegalStateException)
-    new SpnegoAndKrb5LoginService('foo', 'bar')
-  }
-
-  @Test
   void "Test that constructor sets name"() {
-    def gssContext = createMock(GSSContext)
-    mockStatic(SpnegoAndKrb5LoginService)
-    expectPrivate(SpnegoAndKrb5LoginService, 'setupContext', anyObject(String))
-            .andReturn(gssContext)
-    replay(SpnegoAndKrb5LoginService)
-
     def expected = 'foo'
     def actual = new SpnegoAndKrb5LoginService(expected, 'bar').name
 
@@ -91,17 +60,27 @@ class SpnegoAndKrb5LoginServiceTest {
   }
 
   @Test
-  void "Test that constructor sets up GSS context"() {
-    def gssContext = createMock(GSSContext)
-    mockStatic(SpnegoAndKrb5LoginService)
-    expectPrivate(SpnegoAndKrb5LoginService, 'setupContext', 'bar')
-            .andReturn(gssContext)
-            .times(1)
-    replay(SpnegoAndKrb5LoginService)
+  void "Test that constructor sets up GSS manager"() {
+    def service = new SpnegoAndKrb5LoginService('foo', 'bar')
 
-    new SpnegoAndKrb5LoginService('foo', 'bar')
+    assert Whitebox.getInternalState(service, 'manager') instanceof GSSManager
+  }
 
-    verify(SpnegoAndKrb5LoginService)
+  @Test
+  void "Test that constructor sets up GSS name"() {
+    def service = new SpnegoAndKrb5LoginService('foo', 'bar')
+
+    assert Whitebox.getInternalState(service, 'gssName') instanceof GSSName
+  }
+
+  @Test
+  void "Test that constructor sets up mechs"() {
+    def service = new SpnegoAndKrb5LoginService('foo', 'bar')
+
+    def mechs = Whitebox.getInternalState(service, 'mechs')
+
+    assert mechs instanceof Oid[]
+    assert mechs.size() == 2
   }
 
   @Test
@@ -113,10 +92,21 @@ class SpnegoAndKrb5LoginServiceTest {
             .andThrow(new GSSException(GSSException.NO_CRED))
     replay(gssContext)
 
-    mockStatic(SpnegoAndKrb5LoginService)
-    expectPrivate(SpnegoAndKrb5LoginService, 'setupContext', anyObject(String))
-            .andReturn(gssContext)
-    replay(SpnegoAndKrb5LoginService)
+    def actual = new SpnegoAndKrb5LoginService('foo', 'bar').login(null, '12345')
+
+    assert actual == null
+  }
+
+  @Test
+  void "login handles exception on no context"() {
+    def service = new SpnegoAndKrb5LoginService('foo', 'bar')
+
+    def manager = createMock(GSSManager)
+    expect(manager.createCredential(service.gssName, GSSCredential.INDEFINITE_LIFETIME, service.mechs, GSSCredential.ACCEPT_ONLY)).andReturn(null)
+    expect(manager.createContext(anyObject())).andReturn(null)
+    replay(manager)
+
+    Whitebox.setInternalState(service, 'manager', manager)
 
     def actual = new SpnegoAndKrb5LoginService('foo', 'bar').login(null, '12345')
 
@@ -132,7 +122,6 @@ class SpnegoAndKrb5LoginServiceTest {
 
     def gssContext = createMock(GSSContext)
     def gssName = [ toString: {nameAndRole as String} ] as GSSName
-    mockStatic(SpnegoAndKrb5LoginService)
 
     expect(gssContext.isEstablished())
             .andReturn(false)
@@ -145,13 +134,17 @@ class SpnegoAndKrb5LoginServiceTest {
     expect(gssContext.getTargName())
             .andReturn(gssName)
 
-    expectPrivate(SpnegoAndKrb5LoginService, 'setupContext', anyObject(String))
-            .andReturn(gssContext)
-
     replay(gssContext)
-    replay(SpnegoAndKrb5LoginService)
 
     def service = new SpnegoAndKrb5LoginService('foo', 'bar')
+
+    def manager = createMock(GSSManager)
+    expect(manager.createCredential(service.gssName, GSSCredential.INDEFINITE_LIFETIME, service.mechs, GSSCredential.ACCEPT_ONLY)).andReturn(null)
+    expect(manager.createContext(anyObject())).andReturn(gssContext)
+    replay(manager)
+
+    Whitebox.setInternalState(service, 'manager', manager)
+
     service.identityService = new DefaultIdentityService()
 
     def actual = service.login(null, '12345')
@@ -166,23 +159,11 @@ class SpnegoAndKrb5LoginServiceTest {
 
   @Test
   void "validate returns false"() {
-    def gssContext = createMock(GSSContext)
-    mockStatic(SpnegoAndKrb5LoginService)
-    expectPrivate(SpnegoAndKrb5LoginService, 'setupContext', 'bar')
-            .andReturn(gssContext)
-    replay(SpnegoAndKrb5LoginService)
-
     assert ! new SpnegoAndKrb5LoginService('foo', 'bar').validate(null)
   }
 
   @Test
   void "getIdentityService returns the identity service"() {
-    def gssContext = createMock(GSSContext)
-    mockStatic(SpnegoAndKrb5LoginService)
-    expectPrivate(SpnegoAndKrb5LoginService, 'setupContext', 'bar')
-            .andReturn(gssContext)
-    replay(SpnegoAndKrb5LoginService)
-
     def identityService = new DefaultIdentityService()
     def service = new SpnegoAndKrb5LoginService('foo', 'bar')
     service.identityService = identityService
@@ -192,12 +173,31 @@ class SpnegoAndKrb5LoginServiceTest {
 
   @Test
   void "logout don't throw exception"() {
-    def gssContext = createMock(GSSContext)
-    mockStatic(SpnegoAndKrb5LoginService)
-    expectPrivate(SpnegoAndKrb5LoginService, 'setupContext', 'bar')
-            .andReturn(gssContext)
-    replay(SpnegoAndKrb5LoginService)
-
     new SpnegoAndKrb5LoginService('foo', 'bar').logout(null)
+  }
+
+  @Test
+  void "setupContext return null if manager is null"() {
+    def service = new SpnegoAndKrb5LoginService('foo', 'bar')
+
+    Whitebox.setInternalState(service, 'manager', null as GSSManager)
+
+    assert Whitebox.invokeMethod(service, 'setupContext') == null
+  }
+
+  @Test
+  void "setupContext happy path"() {
+    def manager = createMock(GSSManager)
+    def context = createMock(GSSContext)
+
+    def service = new SpnegoAndKrb5LoginService('foo', 'bar')
+
+    expect(manager.createCredential(service.gssName, GSSCredential.INDEFINITE_LIFETIME, service.mechs, GSSCredential.ACCEPT_ONLY)).andReturn(null)
+    expect(manager.createContext(anyObject())).andReturn(context)
+    replay(manager)
+
+    Whitebox.setInternalState(service, 'manager', manager)
+
+    assert Whitebox.invokeMethod(service, 'setupContext') instanceof GSSContext
   }
 }
