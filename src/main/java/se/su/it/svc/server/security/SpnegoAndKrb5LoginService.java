@@ -45,7 +45,7 @@ import javax.security.auth.Subject;
 /**
  * Handle Negotiate requests for mechs SPNEGO & Krb5, based on org.eclipse.jetty.security.SpnegoLoginService
  */
-public class SpnegoAndKrb5LoginService extends AbstractLifeCycle implements LoginService {
+public final class SpnegoAndKrb5LoginService extends AbstractLifeCycle implements LoginService {
 
   /**
    * OID for mech Krb5.
