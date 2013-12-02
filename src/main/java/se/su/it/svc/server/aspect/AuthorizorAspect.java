@@ -107,6 +107,7 @@ public class AuthorizorAspect {
       try {
         response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "You do not have the the required role '" + role + "'");
       } catch (IOException e) {
+        // Swallowing this exception should be safe. This doesn't mean the error wasn't sent.
         LOG.warn("Error while sending error: " + e.getMessage());
       }
 
