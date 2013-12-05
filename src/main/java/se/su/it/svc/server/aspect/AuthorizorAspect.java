@@ -41,7 +41,6 @@ import se.su.it.svc.server.security.Authorizor;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
 import java.lang.annotation.Annotation;
 
 @Aspect
@@ -104,12 +103,7 @@ public class AuthorizorAspect {
       LOG.info("Authorizor.checkRole for uid=" + uid + ", role=" + role + ": DENIED");
       HttpServletResponse response = (HttpServletResponse) PhaseInterceptorChain.getCurrentMessage().get("HTTP.RESPONSE");
 
-      try {
-        response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "You do not have the the required role '" + role + "'");
-      } catch (IOException e) {
-        // Swallowing this exception should be safe. This doesn't mean the error wasn't sent.
-        LOG.warn("Error while sending error: " + e.getMessage());
-      }
+      response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "You do not have the the required role '" + role + "'");
 
       PhaseInterceptorChain.getCurrentMessage().getInterceptorChain().abort();
     }
