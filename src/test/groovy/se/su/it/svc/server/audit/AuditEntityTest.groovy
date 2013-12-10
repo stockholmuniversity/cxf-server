@@ -36,20 +36,19 @@ class AuditEntityTest {
 
   @Test
   void "getInstance: Test factory method"() {
-    AuditEntity auditEntity = AuditEntity.getInstance('1','2','3','4','5', ['6', '7'])
+    AuditEntity auditEntity = AuditEntity.getInstance('1','2','3','4','5')
 
     assert auditEntity.created       == '1'
     assert auditEntity.operation     == '2'
     assert auditEntity.textArgs     == '3'
     assert auditEntity.textReturn   == '4'
     assert auditEntity.state         == '5'
-    assert auditEntity.methodDetails == ['6','7']
   }
 
   @Test
   void "test toString"() {
-    AuditEntity auditEntity = AuditEntity.getInstance('1','2','3','4','5', ['6','7'])
+    AuditEntity auditEntity = AuditEntity.getInstance('1','2','3','4','5')
 
-    assert auditEntity.toString() == AuditEntity.class.name + "(created:1, operation:2, text_args:3, text_return:4, state:5, methodDetails:[6, 7])"
+    assert auditEntity.toString() == AuditEntity.class.name + "(created:1, operation:2, text_args:3, text_return:4, state:5)"
   }
 }

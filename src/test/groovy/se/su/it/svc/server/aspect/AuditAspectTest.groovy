@@ -7,16 +7,12 @@ import org.junit.runner.RunWith
 import org.powermock.core.classloader.annotations.PrepareForTest
 import org.powermock.modules.junit4.PowerMockRunner
 import org.powermock.reflect.Whitebox
-import se.su.it.svc.server.annotations.AuditMethodDetails
 
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpSession
 
 import static org.easymock.EasyMock.expect
-import static org.powermock.api.easymock.PowerMock.createMock
-import static org.powermock.api.easymock.PowerMock.mockStatic
-import static org.powermock.api.easymock.PowerMock.replayAll
-import static org.powermock.api.easymock.PowerMock.replay
+import static org.powermock.api.easymock.PowerMock.*
 
 @RunWith(PowerMockRunner)
 @PrepareForTest([AuditAspect, PhaseInterceptorChain])
@@ -26,15 +22,6 @@ class AuditAspectTest {
 
     public void nothing() { }
 
-    @AuditMethodDetails(details = "")
-    public void details1() { }
-
-    @AuditMethodDetails(details = "foo")
-    public void details2() { }
-
-    @AuditMethodDetails(details = "foo, bar")
-    public void details3() { }
-
     public void method1() { }
 
     public void method2(String s) { }
@@ -43,49 +30,6 @@ class AuditAspectTest {
     public String toString() {
       "FooBar"
     }
-  }
-
-  @Test
-  void "getMethodDetails handles null method"() {
-    def auditAspect = new AuditAspect()
-    List<String> ret = Whitebox.invokeMethod(auditAspect, 'getMethodDetails', null)
-
-    assert ret.isEmpty()
-  }
-
-  @Test
-  void "getMethodDetails handles method without annotation"() {
-    def auditAspect = new AuditAspect()
-    List<String> ret = Whitebox.invokeMethod(auditAspect, 'getMethodDetails', DummyCalss.getMethod('nothing'))
-
-    assert ret.isEmpty()
-  }
-
-  @Test
-  void "getMethodDetails handles empty string"() {
-    def auditAspect = new AuditAspect()
-    List<String> ret = Whitebox.invokeMethod(auditAspect, 'getMethodDetails', DummyCalss.getMethod('details1'))
-
-    assert ret.size() == 1
-    assert ret.contains('')
-  }
-
-  @Test
-  void "getMethodDetails handles one detail"() {
-    def auditAspect = new AuditAspect()
-    List<String> ret = Whitebox.invokeMethod(auditAspect, 'getMethodDetails', DummyCalss.getMethod('details2'))
-
-    assert ret.size() == 1
-    assert ret.contains('foo')
-  }
-
-  @Test
-  void "getMethodDetails handles multiple details"() {
-    def auditAspect = new AuditAspect()
-    List<String> ret = Whitebox.invokeMethod(auditAspect, 'getMethodDetails', DummyCalss.getMethod('details3'))
-
-    assert ret.size() == 2
-    assert ret.containsAll('foo', 'bar')
   }
 
   @Test

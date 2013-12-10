@@ -8,15 +8,12 @@ import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Before;
 import org.slf4j.LoggerFactory;
 import se.su.it.svc.server.annotations.AuditHideReturnValue;
-import se.su.it.svc.server.annotations.AuditMethodDetails;
 import se.su.it.svc.server.audit.AuditEntity;
 
 import javax.servlet.http.HttpServletRequest;
 import java.lang.reflect.Method;
 import java.sql.Timestamp;
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 
 @Aspect
 public class AuditAspect {
@@ -37,21 +34,13 @@ public class AuditAspect {
 
     LOG.info("[" + id + "] Before: " + targetClass.getName() + "." + methodName + " with " + args.length + "params");
 
-    Method method = null;
-    try {
-       method = getMethod(targetClass, methodName, args);
-    } catch (NoSuchMethodException e) {
-      LOG.warn("[" + id + "] Could not get method for " + targetClass.getName() + "." + methodName);
-    }
-
     // Create an AuditEntity based on the gathered information
     AuditEntity ae = AuditEntity.getInstance(
             new Timestamp(new Date().getTime()).toString(),
             methodName,
             objectsToString(args),
             UNKNOWN,
-            STATE_INPROGRESS,
-            getMethodDetails(method)
+            STATE_INPROGRESS
     );
 
     LOG.info("[" + id + "] Received: " + ae);
@@ -85,8 +74,7 @@ public class AuditAspect {
             methodName,
             objectsToString(args),
             printedResult != null ? printedResult.toString() : null,
-            STATE_SUCCESS,
-            getMethodDetails(method)
+            STATE_SUCCESS
     );
 
     LOG.info("[" + id + "] Returned: " + ae);
@@ -103,20 +91,12 @@ public class AuditAspect {
 
     LOG.info("[" + id + "] After exception: " + targetClass.getName() + "." + methodName + " with " + args.length + " params");
 
-    Method method = null;
-    try {
-      method = getMethod(targetClass, methodName, args);
-    } catch (NoSuchMethodException e) {
-      LOG.warn("[" + id + "] Could not get method for " + targetClass.getName() + "." + methodName);
-    }
-
     AuditEntity ae = AuditEntity.getInstance(
             new Timestamp(new Date().getTime()).toString(),
             methodName,
             objectsToString(args),
             throwable != null ? throwable.toString() : null,
-            STATE_EXCEPTION,
-            getMethodDetails(method)
+            STATE_EXCEPTION
     );
 
     LOG.info("[" + id + "] Exception: " + ae);
@@ -161,28 +141,5 @@ public class AuditAspect {
     }
 
     return target.getMethod(name, parameterTypes);
-  }
-
-  /**
-   * Generate MethodDetails from annotation on method to be able to describe
-   * functions that will be invoked by this method
-   *
-   * @return the method details
-   */
-  private List<String> getMethodDetails(Method method) {
-    List<String> methodDetails = new ArrayList<String>();
-
-    if (method != null) {
-      if (method.isAnnotationPresent(AuditMethodDetails.class)) {
-        AuditMethodDetails annotation = method.getAnnotation(AuditMethodDetails.class);
-        String details = annotation.details();
-
-        for(String s : details.split(",")) {
-          methodDetails.add(s.trim());
-        }
-      }
-    }
-
-    return methodDetails;
   }
 }
