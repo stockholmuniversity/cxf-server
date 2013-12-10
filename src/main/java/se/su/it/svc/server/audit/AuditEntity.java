@@ -1,7 +1,5 @@
 package se.su.it.svc.server.audit;
 
-import java.util.List;
-
 public class AuditEntity {
 
   private String created;
@@ -9,7 +7,6 @@ public class AuditEntity {
   private String textArgs;
   private String textReturn;
   private String state;
-  private List<String> methodDetails;
 
   private AuditEntity() {}
 
@@ -17,8 +14,7 @@ public class AuditEntity {
                                         String operation,
                                         String textArgs,
                                         String textReturn,
-                                        String state,
-                                        List<String> methodDetails) {
+                                        String state) {
 
     AuditEntity auditEntity = new AuditEntity();
     auditEntity.created       = created;
@@ -26,7 +22,6 @@ public class AuditEntity {
     auditEntity.textArgs      = textArgs;
     auditEntity.textReturn    = textReturn;
     auditEntity.state         = state;
-    auditEntity.methodDetails = methodDetails;
     return auditEntity;
   }
 
@@ -38,13 +33,7 @@ public class AuditEntity {
     sb.append("operation:").append(operation).append(", ");
     sb.append("text_args:").append(textArgs).append(", ");
     sb.append("text_return:").append(textReturn).append(", ");
-    sb.append("state:").append(state).append(", ");
-
-    sb.append("methodDetails:[");
-    for (String detail : methodDetails) {
-      sb.append(detail).append(", ");
-    }
-    sb.replace(sb.lastIndexOf(","), sb.length(), "").append("]");
+    sb.append("state:").append(state);
     sb.append(")");
 
     return sb.toString();
