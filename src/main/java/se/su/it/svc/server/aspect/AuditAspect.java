@@ -61,7 +61,8 @@ public class AuditAspect {
     try {
       method = getMethod(targetClass, methodName, args);
     } catch (NoSuchMethodException e) {
-      LOG.warn("[" + id + "] Could not get method for " + targetClass.getName() + "." + methodName);
+      // This is probably due to use of primitive data types such as 'boolean' in target method.
+      LOG.warn("[" + id + "] Could not get method for " + e.getMessage());
     }
 
     Object printedResult = result;
