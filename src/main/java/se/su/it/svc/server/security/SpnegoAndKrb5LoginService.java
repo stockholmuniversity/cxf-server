@@ -93,6 +93,8 @@ public final class SpnegoAndKrb5LoginService extends AbstractLifeCycle implement
    */
   public UserIdentity login(String username, Object credentials) {
     byte[] authToken = B64Code.decode((String)credentials);
+    //Just to make sure no other api's have changed this setting (e.g Apache LDAP API)
+    System.setProperty("javax.security.auth.useSubjectCredsOnly", "false");
 
     try {
       GSSContext gssContext = setupContext();
