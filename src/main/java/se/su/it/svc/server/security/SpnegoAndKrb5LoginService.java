@@ -93,7 +93,9 @@ public final class SpnegoAndKrb5LoginService extends AbstractLifeCycle implement
    */
   public UserIdentity login(String username, Object credentials) {
     byte[] authToken = B64Code.decode((String)credentials);
-    //Just to make sure no other api's have changed this setting (e.g Apache LDAP API)
+    //Just to make sure no other api's have changed this setting such as Apache LDAP API version 1.0.0-M24 in
+    //LdapNetworkConnection.java on line 1558.
+    //If set to true GSSAPI negotiation fails in HTTP accept.
     System.setProperty("javax.security.auth.useSubjectCredsOnly", "false");
 
     try {
